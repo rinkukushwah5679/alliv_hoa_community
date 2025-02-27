@@ -71,5 +71,4 @@ gem 'fast_jsonapi' #Optimized serialization of compound
 gem 'devise'
 gem 'stripe'
 gem 'will_paginate'
-gem 'jwt' #For generate authenticate token
 gem 'figaro'
