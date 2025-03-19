@@ -24,6 +24,11 @@ module V1
 			end
 		end
 
+		# The update request is skipped as there is no update request on QuickBooks
+		# def update
+
+		# end
+
 		def destroy
 			@bank_account.destroy
 	    render json: {message:"Bank Account successfully destroyed."}, status: :ok
