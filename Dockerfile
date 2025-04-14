@@ -26,7 +26,7 @@ COPY . .
 
 
 # Expose port 3000 to the Docker host, so we can access it
-EXPOSE 81
+EXPOSE 80
 
 # Start the main process
 CMD ["rails", "server", "-b", "0.0.0.0"]
