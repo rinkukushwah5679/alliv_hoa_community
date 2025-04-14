@@ -4,10 +4,10 @@ default: &default
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV["HOA_DATABASE_USERNAME"] %>
-  password: <%= ENV["HOA_DATABASE_PASSWORD"] %>
-  database: <%= ENV["HOA_DATABASE_NAME"] %>
-  host: <%= ENV["HOA_DATABASE_HOST"] %>
+  username: <%= ENV["DATABASE_USERNAME"] %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
+  database: <%= ENV["DATABASE_NAME"] %>
+  host: <%= ENV["DATABASE_HOST"] %>
 
 
 development:
