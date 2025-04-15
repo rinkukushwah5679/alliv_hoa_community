@@ -35,3 +35,7 @@
 config/application.yml
 coverage/
 .kamal/secrets
+
+# OS generated files #######################
+.DS_Store
+**/.DS_Store
