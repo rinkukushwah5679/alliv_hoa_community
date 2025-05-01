@@ -8,10 +8,16 @@ class Association < ApplicationRecord
   has_one :association_late_payment_fee, dependent: :destroy
   has_one :tax_information, dependent: :destroy
   has_many :community_association_managers, dependent: :destroy
+  has_many :units, dependent: :destroy
   accepts_nested_attributes_for :association_address#, allow_destroy: true
   accepts_nested_attributes_for :association_due
   accepts_nested_attributes_for :association_late_payment_fee
   accepts_nested_attributes_for :tax_information
   accepts_nested_attributes_for :community_association_managers, allow_destroy: true
   accepts_nested_attributes_for :bank_accounts, allow_destroy: true
+  accepts_nested_attributes_for :units, allow_destroy: true
+
+  def status
+    is_active ? "Active" : "Inactive"
+  end
 end

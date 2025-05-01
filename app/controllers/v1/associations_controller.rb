@@ -3,7 +3,9 @@ module V1
 		before_action :set_user
 		before_action :set_association, only: [:show, :update, :destroy]
 		def index
-
+			associations = @user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+			total_pages = associations.present? ? associations.total_pages : 0
+			render json: AssociationsListSerializer.new(associations, meta: {total_pages: total_pages, total_users: associations.count, message: "Association list"}).serializable_hash, status: :ok
 		end
 
 		def show
@@ -28,19 +30,25 @@ module V1
 		end
 
 		def destroy
+			@association.destroy
+	    render json: {message:"Association successfully destroyed."}, status: :ok
+		end
+
+		def manager_details
 			
 		end
 
 
 		private
 		def association_params
-			params.require(:association).permit(:name, :telephone_no, :email, :web_url, :created_by, :updated_by,
+			params.require(:association).permit(:name, :telephone_no, :email, :web_url, :created_by, :updated_by, :is_active,
 			association_address_attributes: [:id, :street, :building_no, :zip_code, :state, :city, :created_by, :updated_by, :_destroy],
 			bank_accounts_attributes: [:id, :account_purpose, :name, :description, :bank_account_type, :account_number, :routing_number, :is_active, :created_by, :updated_by, :_destroy],
 	    association_due_attributes: [:id, :distribution_type, :amount, :frequency, :start_date, :created_by, :updated_by],
 	    association_late_payment_fee_attributes: [:id, :amount, :frequency, :created_by, :updated_by],
-	    tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id], 
-	    community_association_managers_attributes: [:id, :user_id, :created_by, :_destroy])
+	    tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id, :created_by, :updated_by],
+	    community_association_managers_attributes: [:id, :user_id, :created_by, :_destroy],
+	    units_attributes: [:id, :name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :created_by, :updated_by, :_destroy])
 		end
 
 		def set_user

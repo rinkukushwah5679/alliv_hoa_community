@@ -1,5 +1,5 @@
-class AssociationsSerializer < BaseSerializer
-  attributes :id, :name, :telephone_no, :email, :is_active, :web_url, :created_at, :updated_at
+class AssociationsListSerializer < BaseSerializer
+  attributes :id, :name, :status, :units_number, :address, :managers, :created_at, :updated_at
 
   attribute :address do |object|
     unless object.association_address
@@ -9,23 +9,7 @@ class AssociationsSerializer < BaseSerializer
     end
   end
 
-  attribute :bank_accounts do |object|
-    BankAccountSerializer.new(object.bank_accounts).serializable_hash[:data]
-  end
-
-  attribute :dues do |object|
-  	object.association_due
-  end
-
-  attribute :late_payment_fee do |object|
-  	object.association_late_payment_fee
-  end
-
-  attribute :tax_identification do |object|
-  	object.tax_information
-  end
-
-  attribute :community_managers do |object|
+  attribute :managers do |object|
     community_managers = object.community_association_managers
     if community_managers.blank?
       []
@@ -37,8 +21,16 @@ class AssociationsSerializer < BaseSerializer
     end
   end
 
-  attribute :units do |object|
-    UnitSerializer.new(object.units).serializable_hash[:data]
+  attribute :units_number do |object|
+    object.units.count
+  end
+
+  attribute :association_dues do |object|
+    object.association_due&.amount rescue "0.0"
+  end
+
+  attribute :status do |object|
+    object&.status
   end
 
   class << self
@@ -47,5 +39,4 @@ class AssociationsSerializer < BaseSerializer
       UserSerializer.new(user).serializable_hash[:data][:attributes]
     end
   end
-
 end
