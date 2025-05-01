@@ -2,7 +2,15 @@ class AssociationsSerializer < BaseSerializer
   attributes :id, :name, :telephone_no, :email, :is_active, :web_url, :created_at, :updated_at
 
   attribute :address do |object|
-  	AssociationAddressSerializer.new(object.association_address).serializable_hash[:data][:attributes]
+    unless object.association_address
+      nil
+    else
+      AssociationAddressSerializer.new(object.association_address).serializable_hash[:data][:attributes]
+    end
+  end
+
+  attribute :bank_accounts do |object|
+    BankAccountSerializer.new(object.bank_accounts).serializable_hash[:data]
   end
 
   attribute :dues do |object|
@@ -18,16 +26,16 @@ class AssociationsSerializer < BaseSerializer
   end
 
   attribute :community_managers do |object|
-  community_managers = object.community_association_managers
-  if community_managers.blank?
-    []
-  else
-    community_managers.map do |cm|
-      user_data = community_user_data(cm.user)
-      { community_manager_id: cm.id, user_data: user_data }
+    community_managers = object.community_association_managers
+    if community_managers.blank?
+      []
+    else
+      community_managers.map do |cm|
+        user_data = community_user_data(cm.user)
+        { community_manager_id: cm.id, user_data: user_data }
+      end
     end
   end
-end
 
   class << self
     private

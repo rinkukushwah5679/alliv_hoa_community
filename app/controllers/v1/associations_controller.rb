@@ -21,7 +21,7 @@ module V1
 
 		def update
 		  if @association.update(association_params)
-		    render json: { message: "Association updated successfully" }, status: :ok
+				render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
 		  else
 		    render json: { errors: @association.errors.full_messages }, status: :unprocessable_entity
 		  end
@@ -36,6 +36,7 @@ module V1
 		def association_params
 			params.require(:association).permit(:name, :telephone_no, :email, :web_url, :created_by, :updated_by,
 			association_address_attributes: [:id, :street, :building_no, :zip_code, :state, :city, :created_by, :updated_by, :_destroy],
+			bank_accounts_attributes: [:id, :account_purpose, :name, :description, :bank_account_type, :account_number, :routing_number, :is_active, :created_by, :updated_by, :_destroy],
 	    association_due_attributes: [:id, :distribution_type, :amount, :frequency, :start_date, :created_by, :updated_by],
 	    association_late_payment_fee_attributes: [:id, :amount, :frequency, :created_by, :updated_by],
 	    tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id], 
