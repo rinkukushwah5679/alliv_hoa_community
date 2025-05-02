@@ -15,8 +15,8 @@ module V1
 
 		def create
 			bank_account = BankAccount.new(bank_account_params)
-			bank_account.created_by = @user.id
-			bank_account.updated_by = @user.id
+			# bank_account.created_by = @user.id
+			# bank_account.updated_by = @user.id
 			if bank_account.save
 				render json: BankAccountSerializer.new(bank_account, meta: { message: 'Bank Account created successfully' }), status: :created
 			else
@@ -47,7 +47,7 @@ module V1
 		end
 
 		def bank_account_params
-			params.require(:bank_account).permit(:name, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active)
+			params.require(:bank_account).permit(:name, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active, :created_by, :updated_by)
 		end
 
 	end

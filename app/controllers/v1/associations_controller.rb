@@ -22,20 +22,22 @@ module V1
 		end
 
 		def update
-		  if @association.update(association_params)
-				render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
-		  else
-		    render json: { errors: @association.errors.full_messages }, status: :unprocessable_entity
-		  end
+			begin
+				if @association.update(association_params)
+					render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
+			  else
+			    render json: { errors: @association.errors.full_messages }, status: :unprocessable_entity
+			  end
+			rescue ActiveRecord::RecordNotFound => e
+				render json: { errors: e.message }, status: :not_found
+			rescue StandardError => e
+				render json: {errors: e.message}, status: :internal_server_error
+			end
 		end
 
 		def destroy
 			@association.destroy
 	    render json: {message:"Association successfully destroyed."}, status: :ok
-		end
-
-		def manager_details
-			
 		end
 
 

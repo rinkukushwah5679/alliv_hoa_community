@@ -29,7 +29,7 @@ RSpec.describe V1::BankAccountsController, type: :controller do
 
   describe 'POST #create' do
     let(:valid_params) do
-      { bank_account: { name: 'Test Bank', description: 'Test Description', bank_account_type: 'Savings', country: 'USA', account_number: '123456789', routing_number: '987654321', is_active: true } }
+      { bank_account: { name: 'Test Bank', description: 'Test Description', bank_account_type: 'Savings', country: 'USA', account_number: '123456789', routing_number: '987654321', is_active: true, created_by: @user.id, updated_by: @user.id } }
     end
 
     it 'creates a new bank account' do
