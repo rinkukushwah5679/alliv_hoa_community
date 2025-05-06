@@ -75,3 +75,4 @@ gem 'figaro'
 gem "kamal", "~> 2.5"
 gem 'concurrent-ruby', require: 'concurrent'
 gem 'rolify'
+gem "aws-sdk-s3" #AWS SDK
