@@ -16,7 +16,7 @@ class Association < ApplicationRecord
   accepts_nested_attributes_for :community_association_managers, allow_destroy: true
   accepts_nested_attributes_for :bank_accounts, allow_destroy: true
   accepts_nested_attributes_for :units, allow_destroy: true
-
+  belongs_to :user, class_name: "User", foreign_key: :property_manager_id, optional: true
   def status
     is_active ? "Active" : "Inactive"
   end

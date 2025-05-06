@@ -1,5 +1,5 @@
 class UserSerializer < BaseSerializer
-  attributes :id, :first_name, :last_name, :full_name, :profile_pic
+  attributes :id, :email, :first_name, :last_name, :full_name, :profile_pic
 
   attribute :full_name do |object|
     object.full_name

@@ -74,3 +74,4 @@ gem 'will_paginate'
 gem 'figaro'
 gem "kamal", "~> 2.5"
 gem 'concurrent-ruby', require: 'concurrent'
+gem 'rolify'

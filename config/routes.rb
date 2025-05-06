@@ -13,8 +13,13 @@ Rails.application.routes.draw do
   # root "posts#index"
   namespace :v1 do
     resources :users, :only => [:show, :update] do
+      collection do
+        get :property_owners
+      end
       resources :bank_accounts
-      resources :associations
+      resources :associations do
+        resources :units
+      end
     end
   end
 end

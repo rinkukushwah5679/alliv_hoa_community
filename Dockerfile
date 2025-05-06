@@ -1,5 +1,5 @@
 # Use the official Ruby image from the Docker Hub
-FROM ruby:3.3.3
+FROM ruby:3.3.6
 
 # Install dependencies
 RUN apt-get update -qq && apt-get install -y nodejs postgresql-client redis
