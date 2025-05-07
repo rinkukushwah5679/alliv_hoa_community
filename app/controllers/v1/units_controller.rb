@@ -2,25 +2,21 @@ module V1
 	class UnitsController < ApplicationController
 		# before_action :set_user
 		before_action :set_association#, only: [:index, :show, :update, :destroy]
-		before_action :set_unit
+		before_action :set_unit, only: [:show, :update, :destroy]
 		def index
 			units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = units.present? ? units.total_pages : 0
-			render json: UnitSerializer.new(units, meta: {total_pages: total_pages, total_users: units.count, message: "Unit list"}).serializable_hash, status: :ok
+			render json: UnitDetailsSerializer.new(units, meta: {total_pages: total_pages, total_users: units.count, message: "Unit list"}).serializable_hash, status: :ok
 		end
 
 		def show
-			
+			render json: UnitDetailsSerializer.new(@unit, meta: {message: "Unit details"}).serializable_hash, status: :ok
 		end
-
-
-
-
 
 		def create
 			unit = @association.units.new(unit_params)
 			if unit.save
-				render json: UnitSerializer.new(unit, meta: { message: "Unit created successfully"}), status: :created
+				render json: UnitDetailsSerializer.new(unit, meta: { message: "Unit created successfully"}), status: :created
 			else
 				render json: { errors: unit.errors.full_messages }, status: :unprocessable_entity
 			end
@@ -29,7 +25,7 @@ module V1
 		def update
 			begin
 				if @unit.update(unit_params)
-					render json: UnitSerializer.new(@unit, meta: { message: "Unit updated successfully"}), status: :ok
+					render json: UnitDetailsSerializer.new(@unit, meta: { message: "Unit updated successfully"}), status: :ok
 			  else
 			    render json: { errors: @unit.errors.full_messages }, status: :unprocessable_entity
 			  end
@@ -38,6 +34,11 @@ module V1
 			rescue StandardError => e
 				render json: {errors: e.message}, status: :internal_server_error
 			end
+		end
+
+		def destroy
+			@unit.destroy
+	    render json: {message:"Unit successfully destroyed."}, status: :ok
 		end
 
 		private
