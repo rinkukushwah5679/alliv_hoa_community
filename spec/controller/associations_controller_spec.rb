@@ -67,13 +67,6 @@ RSpec.describe V1::AssociationsController, type: :controller do
       expect(response).to have_http_status(:ok)
       expect(@association.reload.name).to eq("Updated Name")
     end
-  end
-
-  describe "DELETE #destroy" do
-    it "destroys the association" do
-      delete :destroy, params: { user_id: @user.id, id: @association.id }
-      expect(response).to have_http_status(:ok)
-    end
 
     it "does not update and returns errors" do
       put :update, params: {user_id: @user.id, id: @association.id, association: {name: nil} }
@@ -98,6 +91,13 @@ RSpec.describe V1::AssociationsController, type: :controller do
 
       expect(response).to have_http_status(:internal_server_error)
       expect(JSON.parse(response.body)['errors']).to be_present
+    end
+  end
+
+  describe "DELETE #destroy" do
+    it "destroys the association" do
+      delete :destroy, params: { user_id: @user.id, id: @association.id }
+      expect(response).to have_http_status(:ok)
     end
   end
 
