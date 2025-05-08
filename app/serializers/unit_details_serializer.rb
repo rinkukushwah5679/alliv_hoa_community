@@ -39,7 +39,7 @@ class UnitDetailsSerializer < BaseSerializer
 			file_url = "https://" + "#{ENV['AWS_BUCKET']}" + ".s3." + "#{ENV['AWS_REGION']}" + ".amazonaws.com/" + "#{unit_file.document.blob.key}"
       file_blob = unit_file.document.blob
 		end
-		{file: file_url, blob: file_blob} rescue nil
+		{id: unit_file.id, file: file_url, blob: file_blob} rescue nil
 	end
 
 	attribute :description do |object|

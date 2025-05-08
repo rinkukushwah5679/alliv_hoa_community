@@ -6,7 +6,7 @@ module V1
 		def index
 			units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = units.present? ? units.total_pages : 0
-			render json: UnitDetailsSerializer.new(units, meta: {total_pages: total_pages, total_users: units.count, message: "Unit list"}).serializable_hash, status: :ok
+			render json: UnitDetailsSerializer.new(units, meta: {total_pages: total_pages, total_units: units.count, message: "Unit list"}).serializable_hash, status: :ok
 		end
 
 		def show
