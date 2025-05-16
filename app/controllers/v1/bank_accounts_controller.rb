@@ -1,6 +1,5 @@
 module V1
 	class BankAccountsController < ApplicationController
-		before_action :set_user
 		before_action :set_bank, only: [:show, :destroy]#, :update
 
 		def index
@@ -15,8 +14,6 @@ module V1
 
 		def create
 			bank_account = BankAccount.new(bank_account_params)
-			# bank_account.created_by = @user.id
-			# bank_account.updated_by = @user.id
 			if bank_account.save
 				render json: BankAccountSerializer.new(bank_account, meta: { message: 'Bank Account created successfully' }), status: :created
 			else
@@ -35,19 +32,13 @@ module V1
 		end
 
 		private
-		def set_user
-			#Is current_user
-			@user = User.find_by(id: params[:user_id])
-			return render json: {errors: {message: ["User not found"]}}, :status => :not_found unless @user.present?
-		end
-
 		def set_bank
 			@bank_account = BankAccount.find_by_id(params[:id]) if params[:id]
 			return render json: {errors: {message: ["Bank Account not found"]}}, :status => :not_found unless @bank_account.present?
 		end
 
 		def bank_account_params
-			params.require(:bank_account).permit(:name, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active, :created_by, :updated_by)
+			params.require(:bank_account).permit(:name, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active)
 		end
 
 	end

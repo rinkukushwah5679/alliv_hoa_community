@@ -60,10 +60,10 @@ module V1
 		end
 
 		def unit_params
-			params.require(:unit).permit(:name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description, :created_by, :updated_by,
-				ownership_account_attributes: [:id, :unit_owner_id, :first_name, :last_name, :phone_number, :email, :is_owner_association_board_member, :is_tenant_occupies_unit, :tenant_id, :tenant_first_name, :tenant_last_name, :tenant_phone_number, :tenant_email, :date_of_purchase, :inheritance_date, :created_by, :updated_by],
-				unit_financial_attributes: [:id, :amount, :frequency, :start_date, :created_by, :updated_by],
-				unit_file_attributes:[:id, :document, :start_date, :created_by, :updated_by, :_destroy])
+			params.require(:unit).permit(:name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description,
+				ownership_account_attributes: [:id, :unit_owner_id, :first_name, :last_name, :phone_number, :email, :is_owner_association_board_member, :is_tenant_occupies_unit, :tenant_id, :tenant_first_name, :tenant_last_name, :tenant_phone_number, :tenant_email, :date_of_purchase, :inheritance_date],
+				unit_financial_attributes: [:id, :amount, :frequency, :start_date],
+				unit_file_attributes:[:id, :document, :_destroy])
 		end
 	end
 end

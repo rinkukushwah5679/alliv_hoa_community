@@ -3,11 +3,11 @@ class AssociationAddressSerializer < BaseSerializer
 
   attribute :created_by do |object|
     creator = object.creator
-    {id: creator.id, email: creator.email}
+    {id: creator&.id, email: creator&.email}
   end
 
   attribute :updated_by do |object|
     updater = object.updater
-    {id: updater.id, email: updater.email}
+    {id: updater&.id, email: updater&.email}
   end
 end
