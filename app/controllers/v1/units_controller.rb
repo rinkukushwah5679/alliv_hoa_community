@@ -50,7 +50,7 @@ module V1
 
 
 		def set_association
-			@association = Association.find_by(id: params[:association_id]) if params[:association_id]
+			@association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
 			return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
 		end
 
