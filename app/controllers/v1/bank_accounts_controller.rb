@@ -5,7 +5,7 @@ module V1
 		def index
 			bank_accounts = BankAccount.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
-			render json: BankAccountSerializer.new(bank_accounts, meta: {total_pages: total_pages, total_users: bank_accounts.count}).serializable_hash, status: :ok
+			render json: BankAccountSerializer.new(bank_accounts, meta: {total_pages: total_pages, total_banks: bank_accounts.count}).serializable_hash, status: :ok
 		end
 
 		def show
