@@ -77,3 +77,4 @@ gem 'concurrent-ruby', require: 'concurrent'
 gem 'rolify'
 gem "aws-sdk-s3" #AWS SDK
 gem 'request_store' #Store value (1.7.0)
+gem 'rack-cors'
