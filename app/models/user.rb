@@ -7,4 +7,8 @@ class User < ApplicationRecord
   def full_name
     "#{first_name} #{last_name}".strip
   end
+
+  # def can_create_more_units?(user)
+  #   Unit.joins(:custom_association).where(associations: { property_manager_id: user.id }).count < (user.number_units_subscribe || 0)
+  # end
 end
