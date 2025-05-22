@@ -5,39 +5,48 @@ module V1
 		def index
 			associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = associations.present? ? associations.total_pages : 0
-			render json: AssociationsListSerializer.new(associations, meta: {total_pages: total_pages, total_associations: associations.count, message: "Association list"}).serializable_hash, status: :ok
+			# render json: AssociationsListSerializer.new(associations, meta: {total_pages: total_pages, total_associations: associations.count, message: "Association list"}).serializable_hash, status: :ok
+			render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_associations: associations.count}, message: "Association list"}, status: :ok
 		end
 
 		def show
-			render json: AssociationsSerializer.new(@association, meta: {message: "Association details"}).serializable_hash, status: :ok
+			# render json: AssociationsSerializer.new(@association, meta: {message: "Association details"}).serializable_hash, status: :ok
+			render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Association details"}, status: :ok
 		end
 
 		def create
 		  association = current_user.associations.new(association_params)
 		  if association.save
-		    render json: AssociationsSerializer.new(association, meta: { message: "Association created successfully"}), status: :created
+		    # render json: AssociationsSerializer.new(association, meta: { message: "Association created successfully"}), status: :created
+		    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], message: "Association created successfully"}, status: :created
 		  else
-		    render json: { errors: association.errors.full_messages }, status: :unprocessable_entity
+		    # render json: { errors: association.errors.full_messages.join(", ") }, status: :unprocessable_entity
+		    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 		  end
 		end
 
 		def update
 			begin
 				if @association.update(association_params)
-					render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
+					# render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Association created successfully"}, status: :ok
 			  else
-			    render json: { errors: @association.errors.full_messages }, status: :unprocessable_entity
+			    # render json: { errors: @association.errors.full_messages.join(", ") }, status: :unprocessable_entity
+			    render json: {status: 422, success: false, data: nil, message: @association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end
 			rescue ActiveRecord::RecordNotFound => e
-				render json: { errors: e.message }, status: :not_found
+				# render json: { errors: e.message }, status: :not_found
+				render json: {status: 404, success: false, data: nil, message: e.message }, :status => :not_found
 			rescue StandardError => e
-				render json: {errors: e.message}, status: :internal_server_error
+				# render json: {errors: e.message}, status: :internal_server_error
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
 			end
 		end
 
 		def destroy
 			@association.destroy
-	    render json: {message:"Association successfully destroyed."}, status: :ok
+	    # render json: {message:"Association successfully destroyed."}, status: :ok
+	    render json: {status: 200, success: true, data: nil, message: "Association successfully destroyed."}, status: :ok
 		end
 
 
@@ -56,12 +65,14 @@ module V1
 		def set_user
 			#Is current_user
 			@user = User.find_by(id: params[:user_id])
-			return render json: {errors: {message: ["User not found"]}}, :status => :not_found unless @user.present?
+			return render json: {errors: "User not found"}, :status => :not_found unless @user.present?
 		end
 
 		def set_association
 			@association = current_user.associations.find_by_id(params[:id]) if params[:id]
-			return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
+			# return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
+			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
+			# return render json: {errors: "Association not found"}, :status => :not_found unless @association.present?
 		end
 	end
 end
