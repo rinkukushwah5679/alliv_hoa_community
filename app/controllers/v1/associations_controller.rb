@@ -29,7 +29,7 @@ module V1
 			begin
 				if @association.update(association_params)
 					# render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Association created successfully"}, status: :ok
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Association updated successfully"}, status: :ok
 			  else
 			    # render json: { errors: @association.errors.full_messages.join(", ") }, status: :unprocessable_entity
 			    render json: {status: 422, success: false, data: nil, message: @association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
