@@ -4,6 +4,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
   has_many :associations, class_name: "Association", foreign_key: "property_manager_id"
   scope :property_owners, -> { with_role(:PropertyOwner) }
+  belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
   def full_name
     "#{first_name} #{last_name}".strip
   end

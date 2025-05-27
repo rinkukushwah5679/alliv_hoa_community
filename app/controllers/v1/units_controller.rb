@@ -50,13 +50,21 @@ module V1
 
 
 		def set_association
-			@association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
-			return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
+			if current_user.has_role?(:SystemAdmin)
+				@association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
+			else
+				@association = Association.find_by(id: params[:association_id]) if params[:association_id]
+			end
+			# @association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
+
+			# return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
+			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
+
 		end
 
 		def set_unit
 			@unit = @association.units.find_by(id: params[:id])
-			return render json: {errors: {message: ["Unit not found"]}}, :status => :not_found unless @unit.present?
+			return render json: {status: 404, success: false, data: nil, message: "Unit not found"}, :status => :not_found unless @unit.present?
 		end
 
 		def unit_params
