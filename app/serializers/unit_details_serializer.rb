@@ -18,13 +18,13 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :notice_of_membership do |object|
-		file_url = nil
-    file_blob = nil
 		if object.notice_document.attached?
 			file_url = "https://" + "#{ENV['AWS_BUCKET']}" + ".s3." + "#{ENV['AWS_REGION']}" + ".amazonaws.com/" + "#{object.notice_document.blob.key}"
       file_blob = object.notice_document.blob
-		end
 		{file: file_url, blob: file_blob} rescue nil
+		else
+			nil
+		end
 	end
 
 	attribute :financials do |object|
@@ -32,14 +32,14 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :attach_files do |object|
-		file_url = nil
-    file_blob = nil
     unit_file = object.unit_file
 		if unit_file && unit_file.document.attached?
 			file_url = "https://" + "#{ENV['AWS_BUCKET']}" + ".s3." + "#{ENV['AWS_REGION']}" + ".amazonaws.com/" + "#{unit_file.document.blob.key}"
       file_blob = unit_file.document.blob
+			{id: unit_file.id, file: file_url, blob: file_blob} rescue nil
+		else
+			nil
 		end
-		{id: unit_file.id, file: file_url, blob: file_blob} rescue nil
 	end
 
 	attribute :description do |object|

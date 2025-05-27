@@ -6,39 +6,39 @@ module V1
 		def index
 			units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = units.present? ? units.total_pages : 0
-			render json: UnitDetailsSerializer.new(units, meta: {total_pages: total_pages, total_units: units.count, message: "Unit list"}).serializable_hash, status: :ok
+			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_units: units.count}, message: "Unit list"}, status: :ok
 		end
 
 		def show
-			render json: UnitDetailsSerializer.new(@unit, meta: {message: "Unit details"}).serializable_hash, status: :ok
+			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(@unit).serializable_hash[:data], message: "Unit details"}, status: :ok
 		end
 
 		def create
 			unit = @association.units.new(unit_params)
 			if unit.save
-				render json: UnitDetailsSerializer.new(unit, meta: { message: "Unit created successfully"}), status: :created
+				render json: {status: 201, success: true, data: UnitDetailsSerializer.new(unit).serializable_hash[:data], message: "Unit created successfully"}, status: :created
 			else
-				render json: { errors: unit.errors.full_messages }, status: :unprocessable_entity
+				render json: {status: 422, success: false, data: nil, message: unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			end
 		end
 
 		def update
 			begin
 				if @unit.update(unit_params)
-					render json: UnitDetailsSerializer.new(@unit, meta: { message: "Unit updated successfully"}), status: :ok
+					render json: {status: 200, success: true, data: UnitDetailsSerializer.new(@unit).serializable_hash[:data], message: "Unit updated successfully"}, status: :ok
 			  else
-			    render json: { errors: @unit.errors.full_messages }, status: :unprocessable_entity
+			  	render json: {status: 422, success: false, data: nil, message: @unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end
 			rescue ActiveRecord::RecordNotFound => e
-				render json: { errors: e.message }, status: :not_found
+				render json: {status: 404, success: false, data: nil, message: e.message }, :status => :not_found
 			rescue StandardError => e
-				render json: {errors: e.message}, status: :internal_server_error
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
 			end
 		end
 
 		def destroy
 			@unit.destroy
-	    render json: {message:"Unit successfully destroyed."}, status: :ok
+			render json: {status: 200, success: true, data: nil, message: "Unit successfully destroyed."}, status: :ok
 		end
 
 		private
