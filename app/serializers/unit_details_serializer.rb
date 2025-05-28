@@ -1,5 +1,9 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area
+	attributes :id, :name, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area
+
+	attribute :association_name do |object|
+		object&.custom_association&.name rescue nil
+	end
 
 	attribute :address do |object|
 		full_address object
@@ -32,14 +36,17 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :attach_files do |object|
-    unit_file = object.unit_file
-		if unit_file && unit_file.document.attached?
-			file_url = "https://" + "#{ENV['AWS_BUCKET']}" + ".s3." + "#{ENV['AWS_REGION']}" + ".amazonaws.com/" + "#{unit_file.document.blob.key}"
-      file_blob = unit_file.document.blob
-			{id: unit_file.id, file: file_url, blob: file_blob} rescue nil
-		else
-			nil
-		end
+    object.unit_files.map { |unit_file| UnitFilesSerializer.new(unit_file).serializable_hash[:data][:attributes] }
+
+		# UnitFilesSerializer.new(object.unit_files).serializable_hash[:data]
+    # unit_file = object.unit_file
+		# if unit_file && unit_file.document.attached?
+		# 	file_url = "https://" + "#{ENV['AWS_BUCKET']}" + ".s3." + "#{ENV['AWS_REGION']}" + ".amazonaws.com/" + "#{unit_file.document.blob.key}"
+    #   file_blob = unit_file.document.blob
+		# 	{id: unit_file.id, file: file_url, blob: file_blob} rescue nil
+		# else
+		# 	nil
+		# end
 	end
 
 	attribute :description do |object|
