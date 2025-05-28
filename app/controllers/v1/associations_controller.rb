@@ -6,7 +6,7 @@ module V1
 			associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = associations.present? ? associations.total_pages : 0
 			# render json: AssociationsListSerializer.new(associations, meta: {total_pages: total_pages, total_associations: associations.count, message: "Association list"}).serializable_hash, status: :ok
-			render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_associations: associations.count}, message: "Association list"}, status: :ok
+			render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
 		end
 
 		def show
