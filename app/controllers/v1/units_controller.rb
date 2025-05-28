@@ -14,11 +14,15 @@ module V1
 		end
 
 		def create
-			unit = @association.units.new(unit_params)
-			if unit.save
-				render json: {status: 201, success: true, data: UnitDetailsSerializer.new(unit).serializable_hash[:data], message: "Unit created successfully"}, status: :created
-			else
-				render json: {status: 422, success: false, data: nil, message: unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+			begin
+				unit = @association.units.new(unit_params)
+				if unit.save
+					render json: {status: 201, success: true, data: UnitDetailsSerializer.new(unit).serializable_hash[:data], message: "Unit created successfully"}, status: :created
+				else
+					render json: {status: 422, success: false, data: nil, message: unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+				end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
 			end
 		end
 
