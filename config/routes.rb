@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       resources :associations do
         resources :units
       end
+      resources :walkthroughs
     end
   end
 end

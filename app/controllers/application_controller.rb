@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   def current_user
     return @current_user if defined?(@current_user)
     @current_user = User.find_by(id: params[:user_id])
-    return render json: {errors: {message: ["User not found"]}}, :status => :not_found unless @current_user.present?
+    return render json: {status: 404, success: false, data: nil, message: "Token has Expired, Please login again."}, :status => :not_found unless @current_user.present?
   end
 
   def store_current_user
