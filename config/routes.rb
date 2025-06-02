@@ -19,8 +19,8 @@ Rails.application.routes.draw do
       resources :bank_accounts
       resources :associations do
         resources :units
+        resources :walkthroughs
       end
-      resources :walkthroughs
     end
   end
 end
