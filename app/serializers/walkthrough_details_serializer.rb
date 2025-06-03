@@ -1,5 +1,15 @@
 class WalkthroughDetailsSerializer < BaseSerializer
-	attributes :id, :facade
+	attributes :id
+
+	attribute :association_name do |ob|
+		ob&.custom_association&.name rescue nil
+	end
+
+	attributes :property_manager_name do |ob|
+		manager = ob.user
+		# ob&.user&.full_name rescue nil
+		{id: manager.id, full_name: "#{manager.first_name} #{manager.last_name}".strip, profile_pic: manager.profile_pic_url} rescue nil
+	end
 
 	attribute :facade do |object|
 		object&.facade&.body rescue nil
