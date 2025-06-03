@@ -34,7 +34,7 @@ RSpec.describe V1::WalkthroughsController, type: :controller do
   end
 
   describe "POST /v1/users/:user_id/associations/:association_id/walkthroughs" do
-    it "creates a unit" do
+    it "creates a walkthrough" do
       post :create, params: valid_params
       expect(response).to have_http_status(:created)
     end
