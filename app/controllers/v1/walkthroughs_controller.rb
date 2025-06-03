@@ -15,6 +15,7 @@ module V1
 
 		def create
 			begin
+				return render json: {status: 422, success: false, data: nil, message: "Please select association"}, :status => :unprocessable_entity if params[:walkthrough][:association_id].blank?
 				@walkthrough = Walkthrough.new(walkthrough_params)
 				if @walkthrough.save
 					render json: {status: 201, success: true, data: WalkthroughDetailsSerializer.new(@walkthrough).serializable_hash[:data], message: "Walkthrough created successfully"}, :status => :created
