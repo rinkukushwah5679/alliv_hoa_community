@@ -1,5 +1,5 @@
 class WalkthroughsSerializer < BaseSerializer
-	attributes :id, :association_name, :property_manager_name, :date_submitted, :submitted_by, :heath_score
+	attributes :id, :association_name, :property_manager_name, :date_submitted, :submitted_by, :health_score
 
 	attribute :association_name do |ob|
 		ob&.custom_association&.name rescue nil

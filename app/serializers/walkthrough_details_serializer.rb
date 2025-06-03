@@ -351,7 +351,7 @@ class WalkthroughDetailsSerializer < BaseSerializer
 	end
 
 	attribute :scores do |object|
-		object&.scores&.body rescue nil
+		object&.scores rescue nil
 	end
 
 	class << self

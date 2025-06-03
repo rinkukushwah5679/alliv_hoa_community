@@ -87,7 +87,7 @@ class Walkthrough < ApplicationRecord
 	has_rich_text :miscellaneous
 	has_many_attached :miscellaneous_attachments
 
-	has_rich_text :scores
+	# has_rich_text :scores
 	# has_many_attached :scores_attachments
 
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
