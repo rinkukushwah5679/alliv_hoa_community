@@ -61,7 +61,9 @@ module V1
 	    association_late_payment_fee_attributes: [:id, :amount, :frequency],
 	    tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id],
 	    community_association_managers_attributes: [:id, :user_id, :_destroy],
-	    units_attributes: [:id, :name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :_destroy])
+	    units_attributes: [:id, :name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description, :_destroy, ownership_account_attributes: [:id, :unit_owner_id, :first_name, :last_name, :phone_number, :email, :is_owner_association_board_member, :is_tenant_occupies_unit, :tenant_id, :tenant_first_name, :tenant_last_name, :tenant_phone_number, :tenant_email, :date_of_purchase, :inheritance_date],
+				unit_financial_attributes: [:id, :amount, :frequency, :start_date],
+				unit_files_attributes:[:id, :document, :category_name, :_destroy]])
 		end
 
 		def set_user

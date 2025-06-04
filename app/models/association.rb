@@ -33,7 +33,7 @@ class Association < ApplicationRecord
 
     total_units = existing_units_count + units.select(&:new_record?).count
 
-    if total_units >= max_units
+    if total_units > max_units
       errors.add(:base, "You can only create up to #{max_units} units. ass")
     end
   end
