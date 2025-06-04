@@ -4,9 +4,20 @@ module V1
 		before_action :set_association#, only: [:index, :show, :update, :destroy]
 		before_action :set_unit, only: [:show, :update, :destroy]
 		def index
-			units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-			total_pages = units.present? ? units.total_pages : 0
-			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
+			begin
+				if current_user.has_role?(:Resident)
+					# owned_unit_ids = OwnershipAccount.where(unit_owner_id: current_user.id).pluck(:unit_id)
+					# units = Unit.where(id: owned_unit_ids).order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+
+					units = Unit.joins(:ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				else
+					units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				end
+				total_pages = units.present? ? units.total_pages : 0
+				render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
+			rescue => e
+				render json: {status: 500, success: false, data: nil, message: e.message}, status: :internal_server_error
+	    end
 		end
 
 		def show
