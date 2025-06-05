@@ -4,11 +4,25 @@ module V1
 		before_action :set_association, only: [:show, :update, :destroy]
 		def index
 			begin
-				if current_user.has_role?(:Resident)
-					associations = Association.joins(units: :ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).distinct.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-				else
-					associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-				end
+				associations = Association
+				  .left_joins(units: :ownership_account)
+				  .left_joins(:community_association_managers)
+				  .where(
+				    "ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id =  :user_id",
+				    user_id: current_user.id
+				  )
+				  .yield_self { |query|
+				    params[:search].present? ? query.where("associations.name ILIKE ?", "%#{params[:search]}%") : query
+				  }
+				  .distinct
+				  .paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				# if current_user.has_role?(:Resident)
+				# 	associations = Association.joins(units: :ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).distinct.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				# elsif current_user.has_role?(:AssociationManager)
+				# 	associations = Association.joins(:community_association_managers).where(community_association_managers: { user_id: current_user.id }).distinct.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				# else
+				# 	associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				# end
 				total_pages = associations.present? ? associations.total_pages : 0
 				render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
 			rescue => e
@@ -80,7 +94,8 @@ module V1
 		end
 
 		def set_association
-			@association = current_user.associations.find_by_id(params[:id]) if params[:id]
+			# @association = current_user.associations.find_by_id(params[:id]) if params[:id]
+			@association = Association.find_by_id(params[:id]) if params[:id]
 			# return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
 			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
 			# return render json: {errors: "Association not found"}, :status => :not_found unless @association.present?
