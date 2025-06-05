@@ -3,10 +3,17 @@ module V1
 		# before_action :set_user
 		before_action :set_association, only: [:show, :update, :destroy]
 		def index
-			associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-			total_pages = associations.present? ? associations.total_pages : 0
-			# render json: AssociationsListSerializer.new(associations, meta: {total_pages: total_pages, total_associations: associations.count, message: "Association list"}).serializable_hash, status: :ok
-			render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
+			begin
+				if current_user.has_role?(:Resident)
+					associations = Association.joins(units: :ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).distinct.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				else
+					associations = current_user.associations.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				end
+				total_pages = associations.present? ? associations.total_pages : 0
+				render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
+			rescue => e
+				render json: {status: 500, success: false, data: nil, message: e.message}, status: :internal_server_error
+	    end
 		end
 
 		def show
