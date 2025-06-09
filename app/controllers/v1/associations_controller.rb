@@ -90,7 +90,7 @@ module V1
 		def set_user
 			#Is current_user
 			@user = User.find_by(id: params[:user_id])
-			return render json: {errors: "User not found"}, :status => :not_found unless @user.present?
+			return render json: {status: 404, success: false, data: nil, message: "User not found"}, :status => :not_found unless @user.present?
 		end
 
 		def set_association
