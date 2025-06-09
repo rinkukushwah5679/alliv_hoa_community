@@ -13,7 +13,7 @@ RSpec.describe V1::BankAccountsController, type: :controller do
   end
 
   describe 'GET #show' do
-    let(:bank_account) { FactoryBot.create(:bank_account, created_by: @user.id, updated_by: @user.id) }
+    let(:bank_account) { FactoryBot.create(:bank_account, user_id: @user.id) }
 
     it 'returns a specific bank account' do
       get :show, params: { user_id: @user.id, id: bank_account.id }
@@ -40,14 +40,14 @@ RSpec.describe V1::BankAccountsController, type: :controller do
     end
 
     it 'returns errors when params are invalid' do
-      post :create, params: { bank_account: { name: '' } }.merge(user_id: @user.id)
+      post :create, params: {user_id: @user.id, bank_account: { name: '' } }.merge()
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(JSON.parse(response.body)).to have_key('errors')
+      expect(JSON.parse(response.body)).to have_key('message')
     end
   end
 
   describe 'DELETE #destroy' do
-    let!(:bank_account) { FactoryBot.create(:bank_account, created_by: @user.id, updated_by: @user.id) }
+    let!(:bank_account) { FactoryBot.create(:bank_account, user_id: @user.id, created_by: @user.id, updated_by: @user.id) }
 
     it 'deletes the bank account' do
       expect {
