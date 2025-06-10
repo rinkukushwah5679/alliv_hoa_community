@@ -1,6 +1,6 @@
 module V1
 	class BankAccountsController < ApplicationController
-		before_action :set_bank, only: [:show, :destroy]#, :update
+		before_action :set_bank, only: [:show, :destroy, :update]
 
 		def index
 			bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
@@ -26,9 +26,17 @@ module V1
 		end
 
 		# The update request is skipped as there is no update request on QuickBooks
-		# def update
-
-		# end
+		def update
+			begin
+				if @bank_account.update(bank_account_params)
+					render json: {status: 200, success: true, data: BankAccountSerializer.new(@bank_account).serializable_hash[:data], message: "Bank Account updated successfully"}, status: :ok
+			  else
+			    render json: {status: 422, success: false, data: nil, message: @bank_account.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+			  end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
+			end
+		end
 
 		def destroy
 			@bank_account.destroy
