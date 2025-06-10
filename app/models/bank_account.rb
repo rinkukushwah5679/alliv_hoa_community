@@ -9,5 +9,5 @@ class BankAccount < ApplicationRecord
   # validates :account_number, uniqueness: true
   belongs_to :bank_accountable, polymorphic: true, optional: true
   belongs_to :user, optional: true
-  # enum account_purpose: {operating: "operating", reserve: "reserve"}, _prefix: true
+  enum :account_purpose, {operating: "operating", reserve: "reserve"}
 end

@@ -42,7 +42,7 @@ module V1
 		end
 
 		def bank_account_params
-			params.require(:bank_account).permit(:name, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active)
+			params.require(:bank_account).permit(:account_purpose, :name, :recipient_name, :recipient_address, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active, :is_epay)
 		end
 
 	end
