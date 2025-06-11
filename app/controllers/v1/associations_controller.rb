@@ -39,6 +39,7 @@ module V1
 			begin
 			  association = current_user.associations.new(association_params)
 			  if association.save
+			  	create_stripe_account_id(association)
 			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], message: "Association created successfully"}, status: :created
 			  else
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
@@ -100,5 +101,59 @@ module V1
 			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
 			# return render json: {errors: "Association not found"}, :status => :not_found unless @association.present?
 		end
+
+		# def test_environment?
+	  #   Rails.env.test?
+	  # end
+
+	  # def create_stripe_account_id(association)
+	  #   return if test_environment?
+	  #   # Standard accounts are fully managed by Stripe dashboard
+	  #   # self.stripe_account_id = Stripe::Account.create({type: 'standard', email: self.email, country: 'US',})['id']
+	  #   file = Stripe::File.create({
+	  #     purpose: 'identity_document',
+	  #     file: File.new('/home/arvind/Desktop/photos/card-driving.jpg')
+	  #   })
+
+	  #   ass_owner = association.user
+	  #   dob = ass_owner.dob
+	  #   if dob.present?
+	  #     day = dob.strftime("%d")
+	  #     month = dob.strftime("%m")
+	  #     year = dob.strftime("%Y")
+	  #   else
+	  #     day = "01"
+	  #     month = "01"
+	  #     year = "1990"
+	  #   end
+	  #   association.stripe_account_id = Stripe::Account.create({
+	  #     type: 'custom',
+	  #     country: 'US',
+	  #     email: association.email,
+	  #     business_type: 'individual',
+	  #     individual: {
+	  #       first_name: ass_owner.first_name,
+	  #       last_name: ass_owner.last_name,
+	  #       email: ass_owner.email,
+	  #       phone: ass_owner.phone_number.present? ? ass_owner.phone_number : '+15551234567',
+	  #       dob: { day: day, month: month, year: year },
+	  #       ssn_last_4: '6789', # Social Security Number
+	  #       verification: {
+	  #       document: { front: file.id } # Use `file.id` from previous step
+	  #     },
+	  #     },
+	  #     business_profile: {
+	  #       mcc: '5734',  # Merchant Category Code
+	  #       url: 'https://www.bitterntec.com/'
+	  #     },
+	  #     capabilities: { transfers: { requested: true } },
+	  #     tos_acceptance: { date: Time.now.to_i, ip: request.remote_ip }
+	  #   })['id']
+	  #   association.save
+
+	  #   # if bank_accounts.present?
+	  #   #   bank_accounts
+	  #   # end
+	  # end
 	end
 end
