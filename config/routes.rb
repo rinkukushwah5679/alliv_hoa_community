@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       resources :associations do
         resources :units, except: [:create]
         resources :walkthroughs
+        post :create_stripe_account, on: :member
       end
     end
   end

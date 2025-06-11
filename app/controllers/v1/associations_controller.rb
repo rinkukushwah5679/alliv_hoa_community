@@ -1,7 +1,7 @@
 module V1
 	class AssociationsController < ApplicationController
 		# before_action :set_user
-		before_action :set_association, only: [:show, :update, :destroy]
+		before_action :set_association, only: [:show, :update, :destroy] #create_stripe_account
 		def index
 			begin
 				associations = Association
@@ -73,6 +73,83 @@ module V1
 	    render json: {status: 200, success: true, data: nil, message: "Association successfully destroyed."}, status: :ok
 		end
 
+		def create_stripe_account
+	    return if test_environment?
+	    begin
+	    	# Standard accounts are fully managed by Stripe dashboard
+		    # self.stripe_account_id = Stripe::Account.create({type: 'standard', email: self.email, country: 'US',})['id']
+		    return render json: { status: 422, success: false, data: nil, message: "Please choose ID"}, status: :unprocessable_entity unless params[:identity_document].present?
+		    uploaded_file = params[:identity_document].tempfile
+				# file = Stripe::File.create({
+				# 	purpose: 'identity_document',
+				# 	file: File.new('/home/arvind/Desktop/photos/card-driving.jpg')
+				# })
+
+				file = Stripe::File.create({
+					purpose: 'identity_document',
+					file: uploaded_file
+				})
+		    ass_owner = @association.user
+		    dob = ass_owner.dob
+		    if dob.present?
+		      day = dob.strftime("%d")
+		      month = dob.strftime("%m")
+		      year = dob.strftime("%Y")
+		    else
+		      day = "01"
+		      month = "01"
+		      year = "1990"
+		    end
+		    account = Stripe::Account.create({
+		      type: 'custom',
+		      country: 'US',
+		      email: @association.email,
+		      business_type: 'individual',
+		      individual: {
+		        first_name: ass_owner.first_name,
+		        last_name: ass_owner.last_name,
+		        email: ass_owner.email,
+		        phone: ass_owner.phone_number.present? ? ass_owner.phone_number : '+15551234567',
+		        dob: { day: day, month: month, year: year },
+		        ssn_last_4: '6789', # Social Security Number
+		        verification: {
+			        document: { front: "file_1RYldSLts0XS7pR6yFG3xewT" } # Use `file.id` from previous step
+			      },
+		      },
+		      business_profile: {
+		        mcc: '5734',  # Merchant Category Code
+		        url: 'https://www.bitterntec.com/'
+		      },
+		      capabilities: { transfers: { requested: true } },
+		      tos_acceptance: { date: Time.now.to_i, ip: request.remote_ip },
+					external_account: {
+						object: 'bank_account',
+						country: 'US',
+						currency: 'usd',
+						routing_number: '110000000',
+						account_number: '000123456789',
+						account_holder_name: ass_owner.full_name,
+						account_holder_type: 'individual'
+					}
+		    })
+		    if account.payouts_enabled
+			    # @association.stripe_account_id = account.id
+			    # @association.is_payout_enabled = true
+			    # @association.save
+			    @association.update_column(:is_payout_enabled, true)
+			    return render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Payout successfully Enabled"}, status: :ok
+			  else
+			  	@association.update_column(:stripe_account_id, account.id)
+			  	return render json: {status: 422, success: false, data: nil, message:"Pending Details #{account.requirements.currently_due.join(', ')}"}
+		    end
+	    rescue Stripe::StripeError => e
+	    	return render json: { status: 422, success: false, data: nil, message: e.message}, status: :unprocessable_entity
+	    rescue StandardError => e
+				# render json: {errors: e.message}, status: :internal_server_error
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
+	    end
+	  end
+
 
 		private
 		def association_params
@@ -102,9 +179,9 @@ module V1
 			# return render json: {errors: "Association not found"}, :status => :not_found unless @association.present?
 		end
 
-		# def test_environment?
-	  #   Rails.env.test?
-	  # end
+		def test_environment?
+			Rails.env.test?
+		end
 
 	  # def create_stripe_account_id(association)
 	  #   return if test_environment?
