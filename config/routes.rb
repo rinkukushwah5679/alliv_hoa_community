@@ -18,10 +18,10 @@ Rails.application.routes.draw do
       end
       resources :bank_accounts
       resources :associations do
-        resources :units, except: [:create]
         resources :walkthroughs
         post :create_stripe_account, on: :member
       end
+      resources :units, except: [:create]
     end
   end
 end

@@ -1,20 +1,22 @@
 module V1
 	class UnitsController < ApplicationController
 		# before_action :set_user
-		before_action :set_association#, only: [:index, :show, :update, :destroy]
+		# before_action :set_association#, only: [:index, :show, :update, :destroy]
 		before_action :set_unit, only: [:show, :update, :destroy]
 		def index
 			begin
-				if current_user.has_role?(:Resident)
-					# owned_unit_ids = OwnershipAccount.where(unit_owner_id: current_user.id).pluck(:unit_id)
-					# units = Unit.where(id: owned_unit_ids).order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 
-					units = Unit.joins(:ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-				else
-					units = @association.units.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-				end
-				total_pages = units.present? ? units.total_pages : 0
-				render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
+				return if set_association_from_params! == :rendered
+				units = fetch_units_for_current_user
+
+				# association_id = params[:association_id]
+				page = params[:page] || 1
+				per_page = params[:per_page] || 10
+
+				units = units.order(created_at: :desc).paginate(page: page, per_page: per_page)
+				total_pages = units.total_pages
+
+				render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
 			rescue => e
 				render json: {status: 500, success: false, data: nil, message: e.message}, status: :internal_server_error
 	    end
@@ -70,17 +72,58 @@ module V1
 			else
 				@association = Association.find_by(id: params[:association_id]) if params[:association_id]
 			end
-			# @association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
-
-			# return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
 			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
-
 		end
 
 		def set_unit
-			@unit = @association.units.find_by(id: params[:id])
+			set_association_from_params!
+			units = fetch_units_for_current_user
+			@unit = units.find_by(id: params[:id])
 			return render json: {status: 404, success: false, data: nil, message: "Unit not found"}, :status => :not_found unless @unit.present?
 		end
+
+		# Reusable association setter
+		def set_association_from_params!
+			return unless params[:association_id].present?
+
+			@association = if current_user.has_role?(:SystemAdmin)
+											 current_user.associations.find_by(id: params[:association_id])
+										 else
+											 Association.find_by(id: params[:association_id])
+										 end
+
+			unless @association
+				render json: {
+					status: 404,
+					success: false,
+					data: nil,
+					message: "Association not found"
+				}, status: :not_found
+				return :rendered
+			end
+		end
+
+		# Reusable units fetcher
+		def fetch_units_for_current_user
+			if current_user.has_role?(:Resident)
+				if @association
+					Unit.joins(:ownership_account).where(
+						ownership_accounts: {
+							unit_owner_id: current_user.id,
+							association_id: @association.id
+						}
+					)
+				else
+					Unit.joins(:ownership_account).where(
+						ownership_accounts: { unit_owner_id: current_user.id }
+					)
+				end
+			else
+				@association ? @association.units : current_user.admin_units
+			end
+		end
+
+
 
 		def unit_params
 			params.require(:unit).permit(:name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description,

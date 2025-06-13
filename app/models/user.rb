@@ -4,6 +4,7 @@ class User < ApplicationRecord
 	devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   has_many :associations, class_name: "Association", foreign_key: "property_manager_id", dependent: :destroy
+  has_many :admin_units, class_name: "Unit", foreign_key: :created_by, dependent: :destroy
   scope :property_owners, -> { with_role(:PropertyOwner) }
   belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
   def full_name
