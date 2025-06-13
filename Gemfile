@@ -80,3 +80,4 @@ gem 'request_store' #Store value (1.7.0)
 gem 'rack-cors'
 gem "exception_notification"
 gem 'acts_as_paranoid', "~> 0.10.3"
+gem 'paper_trail'

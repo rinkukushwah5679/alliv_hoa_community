@@ -1,4 +1,5 @@
 class Unit < ApplicationRecord
+	has_paper_trail :on => [:update]
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
 	has_one :ownership_account, dependent: :destroy
 	has_one :unit_financial, dependent: :destroy

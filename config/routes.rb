@@ -21,7 +21,9 @@ Rails.application.routes.draw do
         resources :walkthroughs
         post :create_stripe_account, on: :member
       end
-      resources :units, except: [:create]
+      resources :units, except: [:create] do
+        get :unit_history, on: :member
+      end
     end
   end
 end

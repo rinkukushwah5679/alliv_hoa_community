@@ -103,6 +103,15 @@ RSpec.describe V1::UnitsController, type: :controller do
     end
   end
 
+  describe "GET /v1/users/:user_id/units/:id/unit_history" do
+    it "returns unit history" do
+      @unit.update(created_by: @user.id)
+      get :unit_history, params: { user_id: @user.id, id: @unit.id}
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["data"]).to be_present
+    end
+  end
+
   private
   def valid_params
     { user_id: @user.id, association_id: @association.id, unit: { name: "Test Unit", unit_number: "101", state: "State", city: "City", zip_code: "12345", street: "Street", building_no: "B1", floor: "1", unit_bedrooms: 2, unit_bathrooms: 1, surface_area: 1200, created_by: @user.id, updated_by: @user.id, notice_document: Rack::Test::UploadedFile.new(Rails.root.join('spec/images/business_logo.jpg'), 'image/jpeg'), unit_file_attributes: {document: Rack::Test::UploadedFile.new(Rails.root.join('spec/images/business_logo.jpg'), 'image/jpeg'), created_by: @user.id, updated_by: @user.id}   } }

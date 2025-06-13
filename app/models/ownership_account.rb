@@ -1,4 +1,5 @@
 class OwnershipAccount < ApplicationRecord
+	has_paper_trail :on => [:update]
 	default_scope { order(created_at: :asc) }
 	validates :first_name, :last_name, presence: true
 	belongs_to :unit#, optional: true

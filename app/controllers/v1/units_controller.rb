@@ -2,7 +2,7 @@ module V1
 	class UnitsController < ApplicationController
 		# before_action :set_user
 		# before_action :set_association#, only: [:index, :show, :update, :destroy]
-		before_action :set_unit, only: [:show, :update, :destroy]
+		before_action :set_unit, only: [:show, :update, :destroy, :unit_history]
 		def index
 			begin
 
@@ -56,6 +56,10 @@ module V1
 		def destroy
 			@unit.destroy
 			render json: {status: 200, success: true, data: nil, message: "Unit successfully destroyed."}, status: :ok
+		end
+
+		def unit_history
+			render json: {status: 200, success: true, data: HistoriesSerializer.new(@unit.versions).serializable_hash[:data], message: "User History"}
 		end
 
 		private
