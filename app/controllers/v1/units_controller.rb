@@ -26,18 +26,18 @@ module V1
 			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(@unit).serializable_hash[:data], message: "Unit details"}, status: :ok
 		end
 
-		def create
-			begin
-				unit = @association.units.new(unit_params)
-				if unit.save
-					render json: {status: 201, success: true, data: UnitDetailsSerializer.new(unit).serializable_hash[:data], message: "Unit created successfully"}, status: :created
-				else
-					render json: {status: 422, success: false, data: nil, message: unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
-				end
-			rescue StandardError => e
-				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
-			end
-		end
+		# def create
+		# 	begin
+		# 		unit = @association.units.new(unit_params)
+		# 		if unit.save
+		# 			render json: {status: 201, success: true, data: UnitDetailsSerializer.new(unit).serializable_hash[:data], message: "Unit created successfully"}, status: :created
+		# 		else
+		# 			render json: {status: 422, success: false, data: nil, message: unit.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+		# 		end
+		# 	rescue StandardError => e
+		# 		render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
+		# 	end
+		# end
 
 		def update
 			begin
@@ -66,14 +66,14 @@ module V1
 		# end
 
 
-		def set_association
-			if current_user.has_role?(:SystemAdmin)
-				@association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
-			else
-				@association = Association.find_by(id: params[:association_id]) if params[:association_id]
-			end
-			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
-		end
+		# def set_association
+		# 	if current_user.has_role?(:SystemAdmin)
+		# 		@association = current_user.associations.find_by(id: params[:association_id]) if params[:association_id]
+		# 	else
+		# 		@association = Association.find_by(id: params[:association_id]) if params[:association_id]
+		# 	end
+		# 	return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
+		# end
 
 		def set_unit
 			set_association_from_params!

@@ -5,7 +5,7 @@ RSpec.describe V1::UnitsController, type: :controller do
     @association = FactoryBot.create(:association, property_manager_id: @user.id)
     @unit = FactoryBot.create(:unit, association_id: @association.id)
   end
-  describe "GET /v1/users/:user_id/associations/:association_id/units" do
+  describe "GET /v1/users/:user_id/units" do
     it "returns a list of units" do
       get :index, params: {user_id: @user.id, association_id: @association.id }
       expect(response).to have_http_status(:ok)
@@ -13,11 +13,25 @@ RSpec.describe V1::UnitsController, type: :controller do
     end
   end
 
-  describe "GET /v1/users/:user_id/associations/:association_id/units/:id" do
+  describe "GET /v1/users/:user_id/units/:id" do
     it "returns unit details" do
       get :show, params: { user_id: @user.id, association_id: @association.id, id: @unit.id}
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)["data"]["id"]).to eq(@unit.id.to_s)
+    end
+
+    it "returns unit not found" do
+      @user.add_role(:Resident)
+      get :show, params: { user_id: @user.id, association_id: @association.id, id: @unit.id}
+      expect(response).to have_http_status(:not_found)
+      expect(JSON.parse(response.body)["message"]).to eq("Unit not found")
+    end
+
+    it "returns unit not found without association" do
+      @user.add_role(:Resident)
+      get :show, params: { user_id: @user.id, id: @unit.id}
+      expect(response).to have_http_status(:not_found)
+      expect(JSON.parse(response.body)["message"]).to eq("Unit not found")
     end
   end
 
@@ -33,18 +47,18 @@ RSpec.describe V1::UnitsController, type: :controller do
     end
   end
 
-  describe "POST /v1/users/:user_id/associations/:association_id/units" do
-    it "creates a unit" do
-      post :create, params: valid_params
-      expect(response).to have_http_status(:created)
-    end
+  # describe "POST /v1/users/:user_id/associations/:association_id/units" do
+  #   it "creates a unit" do
+  #     post :create, params: valid_params
+  #     expect(response).to have_http_status(:created)
+  #   end
 
-    it 'returns errors when params are invalid' do
-      post :create, params: invalid_params
-      expect(response).to have_http_status(:unprocessable_entity)
-      expect(JSON.parse(response.body)).to have_key('errors')
-    end
-  end
+  #   it 'returns errors when params are invalid' do
+  #     post :create, params: invalid_params
+  #     expect(response).to have_http_status(:unprocessable_entity)
+  #     expect(JSON.parse(response.body)).to have_key('errors')
+  #   end
+  # end
 
    describe "PUT #update" do
     it "updates the unit" do
@@ -57,7 +71,8 @@ RSpec.describe V1::UnitsController, type: :controller do
       put :update, params: {user_id: @user.id, association_id: @association.id, id: @unit.id, unit: {name: @unit.name, ownership_account_attributes: {first_name: ""}} }
 
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(JSON.parse(response.body)['errors']).to be_present
+      expect(JSON.parse(response.body)["success"]).to eq false
+      expect(JSON.parse(response.body)).to have_key('message')
     end
 
      it "returns a 404 error and ownership not found" do
@@ -65,7 +80,8 @@ RSpec.describe V1::UnitsController, type: :controller do
       }
 
       expect(response).to have_http_status(:not_found)
-      expect(JSON.parse(response.body)['errors']).to be_present
+      expect(JSON.parse(response.body)["success"]).to eq false
+      expect(JSON.parse(response.body)).to have_key('message')
     end
 
     it "returns a 500 internal server error" do
@@ -75,7 +91,8 @@ RSpec.describe V1::UnitsController, type: :controller do
       }
 
       expect(response).to have_http_status(:internal_server_error)
-      expect(JSON.parse(response.body)['errors']).to be_present
+      expect(JSON.parse(response.body)["success"]).to eq false
+      expect(JSON.parse(response.body)["message"]).to eq('Unexpected error')
     end
   end
 
