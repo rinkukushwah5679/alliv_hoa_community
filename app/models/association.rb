@@ -20,9 +20,20 @@ class Association < ApplicationRecord
   belongs_to :user, class_name: "User", foreign_key: :property_manager_id, optional: true
   has_many :walkthroughs, dependent: :destroy
   validate :validate_units_limit
+  enum :status, { Active: "Active", InActive: "InActive"}
+  before_save :set_is_active_flag, if: :will_save_change_to_status?
 
-  def status
-    is_active ? "Active" : "Inactive"
+
+  # def status
+  #   is_active ? "Active" : "Inactive"
+  # end
+
+  def set_is_active_flag
+    if status == "Active"
+      self.is_active = true
+    else
+      self.is_active = false
+    end
   end
 
   def validate_units_limit

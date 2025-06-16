@@ -153,7 +153,7 @@ module V1
 
 		private
 		def association_params
-			params.require(:association).permit(:name, :telephone_no, :email, :web_url, :is_active,
+			params.require(:association).permit(:name, :telephone_no, :email, :web_url, :is_active, :status,
 			association_address_attributes: [:id, :street, :building_no, :zip_code, :state, :city, :_destroy],
 			bank_accounts_attributes: [:id, :account_purpose, :name, :description, :bank_account_type, :account_number, :routing_number, :is_active, :_destroy],
 	    association_due_attributes: [:id, :distribution_type, :amount, :frequency, :start_date],
