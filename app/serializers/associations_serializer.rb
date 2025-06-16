@@ -1,5 +1,5 @@
 class AssociationsSerializer < BaseSerializer
-  attributes :id, :name, :telephone_no, :email, :is_active, :web_url, :created_at, :updated_at
+  attributes :id, :name, :telephone_no, :email, :is_active, :status, :web_url, :created_at, :updated_at
 
   attribute :address do |object|
     unless object.association_address

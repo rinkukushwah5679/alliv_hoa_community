@@ -12,7 +12,10 @@ module V1
 				    user_id: current_user.id
 				  )
 				  .yield_self { |query|
-				    params[:search].present? ? query.where("associations.name ILIKE ?", "%#{params[:search]}%") : query
+				    # params[:search].present? ? query.where("associations.name ILIKE ?", "%#{params[:search]}%") : query
+				    query = query.where("associations.name ILIKE ?", "%#{params[:search]}%") if params[:search].present?
+				    query = query.where(status: params[:status]) if params[:status].present?
+				    query
 				  }
 				  .distinct
 				  .paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
