@@ -42,7 +42,7 @@ module V1
 			begin
 			  association = current_user.associations.new(association_params)
 			  if association.save
-			  	create_stripe_account_id(association)
+			  	# create_stripe_account_id(association)
 			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], message: "Association created successfully"}, status: :created
 			  else
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
