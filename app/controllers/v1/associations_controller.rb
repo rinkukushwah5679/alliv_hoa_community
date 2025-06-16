@@ -116,7 +116,7 @@ module V1
 		        dob: { day: day, month: month, year: year },
 		        ssn_last_4: '6789', # Social Security Number
 		        verification: {
-			        document: { front: "file_1RYldSLts0XS7pR6yFG3xewT" } # Use `file.id` from previous step
+			        document: { front: file.id } # Use `file.id` from previous step
 			      },
 		      },
 		      business_profile: {
@@ -161,6 +161,7 @@ module V1
 			bank_accounts_attributes: [:id, :account_purpose, :name, :description, :bank_account_type, :account_number, :routing_number, :is_active, :_destroy],
 	    association_due_attributes: [:id, :distribution_type, :amount, :frequency, :start_date],
 	    association_late_payment_fee_attributes: [:id, :amount, :frequency],
+	    special_assesments_attributes: [:id, :distribution_type, :amount, :frequency, :start_date],
 	    tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id],
 	    community_association_managers_attributes: [:id, :user_id, :_destroy],
 	    units_attributes: [:id, :name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description, :_destroy, ownership_account_attributes: [:id, :unit_owner_id, :first_name, :last_name, :phone_number, :email, :is_owner_association_board_member, :is_tenant_occupies_unit, :tenant_id, :tenant_first_name, :tenant_last_name, :tenant_phone_number, :tenant_email, :date_of_purchase, :inheritance_date],
