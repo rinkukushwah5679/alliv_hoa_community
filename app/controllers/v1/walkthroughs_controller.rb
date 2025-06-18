@@ -1,12 +1,23 @@
 module V1
 	class WalkthroughsController < ApplicationController
-		before_action :set_association
+		# before_action :set_association, except: [:index]
 		before_action :set_walkthrough, only: [:show, :update, :destroy]
 
 		def index
-			walkthroughs = @association.walkthroughs.order("created_at DESC").paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-			total_pages = walkthroughs.present? ? walkthroughs.total_pages : 0
-			render json: {status: 201, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
+			begin
+				if params[:association_id].present?
+					association = Association.find_by(id: params[:association_id])
+					return render json: {status: 404, success: false, data: nil, message: "Associdation not found"} unless association.present?
+					walkthroughs = association.walkthroughs.order("created_at DESC")
+				else
+					walkthroughs = current_user.walkthroughs.order("created_at DESC")
+				end
+				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				total_pages = walkthroughs.present? ? walkthroughs.total_pages : 0
+				render json: {status: 200, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }, status: :internal_server_error
+			end
 		end
 
 		def show
@@ -114,8 +125,8 @@ module V1
 		end
 
 		def set_association
-			@association = Association.find_by_id(params[:association_id]) if params[:association_id]
-			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
+			# @association = Association.find_by_id(params[:association_id]) if params[:association_id]
+			# return render json: {status: 404, success: false, data: nil, message: "Assdociation not found"}, :status => :not_found unless @association.present?
 		end
 
 		def set_walkthrough

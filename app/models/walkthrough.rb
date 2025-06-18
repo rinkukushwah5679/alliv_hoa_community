@@ -90,7 +90,7 @@ class Walkthrough < ApplicationRecord
 	# has_rich_text :scores
 	# has_many_attached :scores_attachments
 
-	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
+	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id#, optional: true
 	belongs_to :user #Manager
 	belongs_to :creator, class_name: "User", foreign_key: :created_by, optional: true
   belongs_to :updater, class_name: "User", foreign_key: :updated_by, optional: true
