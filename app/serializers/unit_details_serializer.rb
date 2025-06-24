@@ -32,7 +32,8 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :financials do |object|
-		object.unit_financial
+		# object.unit_financials
+		object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
 	end
 
 	attribute :attach_files do |object|
