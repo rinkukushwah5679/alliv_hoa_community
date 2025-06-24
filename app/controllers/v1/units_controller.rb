@@ -80,7 +80,7 @@ module V1
 		# end
 
 		def set_unit
-			set_association_from_params!
+			return if set_association_from_params! == :rendered
 			units = fetch_units_for_current_user
 			@unit = units.find_by(id: params[:id])
 			return render json: {status: 404, success: false, data: nil, message: "Unit not found"}, :status => :not_found unless @unit.present?
