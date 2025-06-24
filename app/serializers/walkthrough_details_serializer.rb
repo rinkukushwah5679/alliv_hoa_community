@@ -364,6 +364,10 @@ class WalkthroughDetailsSerializer < BaseSerializer
 		object&.scores rescue nil
 	end
 
+	attribute :average_score do |object|
+		object&.health_score
+	end
+
 	class << self
     private
     def attachments(attachments)
