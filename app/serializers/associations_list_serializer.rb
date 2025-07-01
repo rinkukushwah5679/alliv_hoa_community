@@ -15,8 +15,12 @@ class AssociationsListSerializer < BaseSerializer
       []
     else
       community_managers.map do |com|
-        user_data = community_user_data(com.user)
-        { community_manager_id: com.id, user_data: user_data }
+        begin
+          user_data = community_user_data(com.user)
+          { community_manager_id: com.id, user_data: user_data }
+        rescue StandardError => e
+          []
+        end
       end
     end
   end

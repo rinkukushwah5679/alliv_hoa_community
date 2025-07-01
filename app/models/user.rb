@@ -12,6 +12,8 @@ class User < ApplicationRecord
     "#{first_name} #{last_name}".strip
   end
 
+  has_many :community_association_managers, dependent: :destroy
+
   # has_many :bank_accounts, class_name: "BankAccount", foreign_key: :created_by, dependent: :destroy
   has_many :bank_accounts, dependent: :destroy
 
