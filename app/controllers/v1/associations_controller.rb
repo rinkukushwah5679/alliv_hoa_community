@@ -28,6 +28,7 @@ module V1
 				# end
 				total_pages = associations.present? ? associations.total_pages : 0
 				render json: {status: 200, success: true, data: AssociationsListSerializer.new(associations).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
+				render json: {status: 200, success: true, data: "listtt", pagination_data: {total_pages: total_pages, total_records: associations.count}, message: "Association list"}, status: :ok
 			rescue => e
 				render json: {status: 500, success: false, data: nil, message: e.message}, status: :internal_server_error
 	    end
