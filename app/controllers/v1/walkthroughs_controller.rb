@@ -13,8 +13,13 @@ module V1
 					walkthroughs = current_user.walkthroughs.order("created_at DESC")
 				end
 				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				if walkthroughs.present?
+					health_score = ((walkthroughs.map(&:health_score).sum.to_f)/walkthroughs.count).round(2)
+				else
+					health_score = 0.0
+				end
 				total_pages = walkthroughs.present? ? walkthroughs.total_pages : 0
-				render json: {status: 200, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
+				render json: {status: 200, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], health_score: health_score, pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }, status: :internal_server_error
 			end
