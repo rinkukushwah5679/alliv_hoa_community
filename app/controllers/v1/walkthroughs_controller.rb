@@ -14,7 +14,8 @@ module V1
 				end
 				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 				if walkthroughs.present?
-					health_score = ((walkthroughs.map(&:health_score).sum.to_f)/walkthroughs.count).round(2)
+					# health_score = ((walkthroughs.map(&:health_score).sum.to_f)/walkthroughs.count).round(2)
+					health_score = (walkthroughs.sum(:health_score).to_f / walkthroughs.count).round(2)
 				else
 					health_score = 0.0
 				end
