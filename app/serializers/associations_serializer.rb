@@ -21,6 +21,11 @@ class AssociationsSerializer < BaseSerializer
   	object.association_late_payment_fee
   end
 
+  attribute :special_assesments do |object|
+    SpecialAssesmentsSerializer.new(object.special_assesments).serializable_hash[:data] rescue []
+    # object.special_assesments rescue []
+  end
+
   attribute :tax_identification do |object|
   	object.tax_information
   end
