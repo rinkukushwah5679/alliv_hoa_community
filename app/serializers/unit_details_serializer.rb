@@ -36,6 +36,10 @@ class UnitDetailsSerializer < BaseSerializer
 		object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
 	end
 
+	attribute :autopay_status do |object|
+		object.autopay_status rescue nil
+	end
+
 	attribute :attach_files do |object|
     object.unit_files.map { |unit_file| UnitFilesSerializer.new(unit_file).serializable_hash[:data][:attributes] }
 
