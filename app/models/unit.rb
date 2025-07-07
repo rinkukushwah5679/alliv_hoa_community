@@ -9,6 +9,12 @@ class Unit < ApplicationRecord
 	accepts_nested_attributes_for :unit_files, allow_destroy: true
 	has_one_attached :notice_document
 	# before_create :user_unit_limit_not_exceeded
+	before_create :set_unit_number
+ 
+  def set_unit_number
+    last_unit_number = Unit.unscoped.maximum(:unit_number) || 001
+    self.unit_number = last_unit_number + 1
+  end
 
 	def user_unit_limit_not_exceeded
     return unless custom_association.present? && custom_association&.user.present?
