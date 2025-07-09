@@ -24,7 +24,7 @@ class Association < ApplicationRecord
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
-
+  after_create :create_stripe_account_id
 
   # def status
   #   is_active ? "Active" : "Inactive"
@@ -49,5 +49,24 @@ class Association < ApplicationRecord
     if total_units > max_units
       errors.add(:base, "You can only create up to #{max_units} units.")
     end
+  end
+
+  private
+  def test_environment?
+    Rails.env.test?
+  end
+
+  def create_stripe_account_id
+    return if test_environment?
+    # Standard accounts are fully managed by Stripe dashboard
+    # self.stripe_account_id = Stripe::Account.create({type: 'standard', email: self.email, country: 'US',})['id']
+    stripe_account_id = Stripe::Account.create({
+      type: 'custom',
+      country: 'US',
+      email: self.email,
+      capabilities: { transfers: { requested: true } },
+      business_type: 'individual'
+    })['id']
+    self.update_column(:stripe_account_id, stripe_account_id)
   end
 end
