@@ -12,15 +12,47 @@ module V1
 				else
 					walkthroughs = current_user.walkthroughs.order("created_at DESC")
 				end
-				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-				if walkthroughs.present?
-					# health_score = ((walkthroughs.map(&:health_score).sum.to_f)/walkthroughs.count).round(2)
-					health_score = (walkthroughs.sum(:health_score).to_f / walkthroughs.count).round(2)
-				else
-					health_score = 0.0
+
+				# Data filterd with date range
+				if params[:start_date].present? && params[:end_date].present?
+					walkthroughs = walkthroughs.where(created_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
 				end
-				total_pages = walkthroughs.present? ? walkthroughs.total_pages : 0
-				render json: {status: 200, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], health_score: health_score, pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
+
+				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+
+				if params[:export] == "true"
+					require 'csv'
+					# Ensure folder exists
+					export_dir = Rails.root.join("tmp", "exports")
+					FileUtils.mkdir_p(export_dir)
+
+					filename = "walkthroughs_time_#{Time.now.to_i}.csv"
+					filepath = export_dir.join(filename)
+
+					CSV.open(filepath, "w", write_headers: true, headers: ["Association Name", "Property Manager Name", "Date Submitted", "Submitted by", "Health Score"]) do |csv|
+						walkthroughs.each do |walk|
+							csv << [
+								walk&.custom_association&.name,
+								walk&.user&.full_name,
+								walk&.created_at.to_date,
+								walk&.creator&.full_name,
+								walk&.health_score
+							]
+						end
+					end
+					# Generate file download URL (adjust to match your domain)
+					download_url = "#{ENV['HOA_COMMUNITY_SERVER_URL']}/v1/download_file?filename=#{filename}"
+					return render json: {status: 200, success: true, data: {url: download_url}, message: "Export successfully" }, status: :ok
+				else
+					if walkthroughs.present?
+						# health_score = ((walkthroughs.map(&:health_score).sum.to_f)/walkthroughs.count).round(2)
+						health_score = (walkthroughs.sum(:health_score).to_f / walkthroughs.count).round(2)
+					else
+						health_score = 0.0
+					end
+					total_pages = walkthroughs.present? ? walkthroughs.total_pages : 0
+					render json: {status: 200, success: true, data: WalkthroughsSerializer.new(walkthroughs).serializable_hash[:data], health_score: health_score, pagination_data: {total_pages: total_pages, total_records: walkthroughs.count}, message: "Walkthroughs list"}, :status => :ok
+				end
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }, status: :internal_server_error
 			end
