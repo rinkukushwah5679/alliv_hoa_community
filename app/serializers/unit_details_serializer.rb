@@ -1,5 +1,5 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area
+	attributes :id, :name, :status, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area
 
 	attribute :association_name do |object|
 		object&.custom_association&.name rescue nil
@@ -19,6 +19,10 @@ class UnitDetailsSerializer < BaseSerializer
 
 	attribute :ownership do |object|
 		OwnershipSerializer.new(object.ownership_account).serializable_hash[:data]
+	end
+
+	attribute :status do |object|
+		object.status rescue nil
 	end
 
 	attribute :notice_of_membership do |object|
