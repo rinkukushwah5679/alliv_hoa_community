@@ -25,5 +25,6 @@ Rails.application.routes.draw do
         get :unit_history, on: :member
       end
     end
+    get '/download_file', to: 'downloads#download_file'
   end
 end

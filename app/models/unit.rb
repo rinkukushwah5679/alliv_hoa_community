@@ -31,4 +31,8 @@ class Unit < ApplicationRecord
       throw(:abort)
     end
   end
+
+  def full_address
+    "#{street}, #{city} #{zip_code}".strip
+  end
 end

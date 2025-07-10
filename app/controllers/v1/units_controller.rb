@@ -14,9 +14,35 @@ module V1
 				per_page = params[:per_page] || 10
 
 				units = units.order(created_at: :desc).paginate(page: page, per_page: per_page)
-				total_pages = units.total_pages
 
-				render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
+				if params[:export] == "true"
+					require 'csv'
+					# Ensure folder exists
+					export_dir = Rails.root.join("tmp", "exports")
+					FileUtils.mkdir_p(export_dir)
+
+					filename = "units_time_#{Time.now.to_i}.csv"
+					filepath = export_dir.join(filename)
+
+					CSV.open(filepath, "w", write_headers: true, headers: ["Building Number", "Stree Name", "Unit Number", "Unit Owner", "Dues","Status"]) do |csv|
+						units.each do |unit|
+							csv << [
+								unit&.building_no,
+								unit&.full_address,
+								unit&.unit_number,
+								unit&.ownership_account&.user&.full_name,
+								"", #Dues pending
+								unit&.status
+							]
+						end
+					end
+					# Generate file download URL (adjust to match your domain)
+					download_url = "#{ENV['HOA_COMMUNITY_SERVER_URL']}/v1/download_file?filename=#{filename}"
+					return render json: {status: 200, success: true, data: {url: download_url}, message: "Export successfully" }, status: :ok
+				else
+					total_pages = units.total_pages
+					return render json: {status: 200, success: true, data: UnitDetailsSerializer.new(units).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: units.count}, message: "Unit list"}, status: :ok
+				end
 			rescue => e
 				render json: {status: 500, success: false, data: nil, message: e.message}, status: :internal_server_error
 	    end
