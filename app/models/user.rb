@@ -15,7 +15,7 @@ class User < ApplicationRecord
   has_many :community_association_managers, dependent: :destroy
 
   # has_many :bank_accounts, class_name: "BankAccount", foreign_key: :created_by, dependent: :destroy
-  has_many :bank_accounts, dependent: :destroy
+  has_many :bank_accounts, as: :bank_accountable, dependent: :destroy
 
   # def can_create_more_units?(user)
   #   Unit.joins(:custom_association).where(associations: { property_manager_id: user.id }).count < (user.number_units_subscribe || 0)

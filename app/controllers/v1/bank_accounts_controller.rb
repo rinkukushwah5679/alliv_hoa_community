@@ -1,7 +1,7 @@
 module V1
 	class BankAccountsController < ApplicationController
 		before_action :set_bank, only: [:show, :destroy, :update]
-
+		# rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity_response
 		def index
 			bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 			total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
@@ -14,12 +14,42 @@ module V1
 
 		def create
 			begin
-				bank_account = current_user.bank_accounts.new(bank_account_params)
-				if bank_account.save
+				BankAccount.transaction do
+					bank_account = current_user.bank_accounts.new(bank_account_params)
+					# if bank_account.save
+					# 	return render json: {status: 201, success: true, data: BankAccountSerializer.new(bank_account).serializable_hash[:data], message: "Bank Account created successfully"}, status: :created
+					# else
+					# 	return render json: {status: 422, success: false, data: nil, message: bank_account.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+					# end
+					bank_account.save!
+
+					# Stripe Bank Account Creation
+					# stripe_account_id = current_user.stripe_account_id
+					# raise "Stripe account not found" unless stripe_account_id.present?
+
+					stripe_bank_account = Stripe::Account.create_external_account(
+						current_user.stripe_account_id,
+						{
+							external_account: {
+								object: "bank_account",
+								country: bank_account.country || "US",
+								currency: "usd",
+								account_holder_name: bank_account.recipient_name,
+								account_holder_type: "individual",
+								routing_number: bank_account.routing_number,
+								account_number: bank_account.account_number
+							}
+						}
+					)
+					bank_account.update!(stripe_bank_account_id: stripe_bank_account.id)
+
 					render json: {status: 201, success: true, data: BankAccountSerializer.new(bank_account).serializable_hash[:data], message: "Bank Account created successfully"}, status: :created
-				else
-					render json: {status: 422, success: false, data: nil, message: bank_account.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 				end
+			rescue ActiveRecord::RecordInvalid => e
+				render_unprocessable_entity_response(e)
+			rescue Stripe::StripeError => e
+				Rails.logger.error("Stripe Error: #{e.message}")
+				render json: {status: 422, success: false, data: nil, message: friendly_stripe_error(e)}, status: :unprocessable_entity
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
 			end
@@ -51,6 +81,22 @@ module V1
 
 		def bank_account_params
 			params.require(:bank_account).permit(:account_purpose, :name, :recipient_name, :recipient_address, :description, :bank_account_type, :country, :account_number, :routing_number, :is_active, :is_epay)
+		end
+
+		def render_unprocessable_entity_response(exception)
+			render json: {status: 422, success: false, data: nil, message: exception.record.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+	    # return render json: { errors: {message: [exception.message]}}, status: :unprocessable_entity
+	  end
+
+		def friendly_stripe_error(e)
+			case e.message
+			when /routing number .* does not correspond/
+				"Please enter a valid routing number."
+			when /is required in test mode/
+				"Please use a valid test account number in test mode."
+			else
+				e.message
+			end
 		end
 
 	end
