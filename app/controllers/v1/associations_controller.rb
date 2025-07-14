@@ -42,8 +42,9 @@ module V1
 			begin
 			  association = current_user.associations.new(association_params)
 			  if association.save
+					bank_accounts = create_stripe_bank_account(association)
 			  	# create_stripe_account_id(association)
-			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], message: "Association created successfully"}, status: :created
+			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association created successfully"}, status: :created
 			  else
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end
@@ -55,8 +56,9 @@ module V1
 		def update
 			begin
 				if @association.update(association_params)
+					bank_accounts = create_stripe_bank_account(@association)
 					# render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], message: "Association updated successfully"}, status: :ok
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association updated successfully"}, status: :ok
 			  else
 			    # render json: { errors: @association.errors.full_messages.join(", ") }, status: :unprocessable_entity
 			    render json: {status: 422, success: false, data: nil, message: @association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
@@ -185,6 +187,40 @@ module V1
 
 		def test_environment?
 			Rails.env.test?
+		end
+
+		def create_stripe_bank_account(association)
+			failed_accounts = []
+
+      association.bank_accounts.where(stripe_bank_account_id:[nil, ""]).each do |bank_account|
+        begin
+          stripe_bank_account = Stripe::Account.create_external_account(
+            association.stripe_account_id,
+            {
+              external_account: {
+                object: "bank_account",
+                country: bank_account.country || "US",
+                currency: "usd",
+                account_holder_name: bank_account.recipient_name || association.name,
+                account_holder_type: "individual",
+                routing_number: bank_account.routing_number,
+                account_number: bank_account.account_number
+              }
+            }
+          )
+          bank_account.update(stripe_bank_account_id: stripe_bank_account.id, is_verified: true)
+        rescue Stripe::StripeError => e
+          bank_account.update(is_verified: false)
+          failed_accounts << {
+            id: bank_account.id,
+            name: bank_account.name,
+            account_number: bank_account.account_number,
+            routing_number: bank_account.routing_number,
+            error: e.message
+          }
+        end
+      end
+      failed_accounts
 		end
 
 	  # def create_stripe_account_id(association)

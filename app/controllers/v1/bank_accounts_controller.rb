@@ -41,7 +41,7 @@ module V1
 							}
 						}
 					)
-					bank_account.update!(stripe_bank_account_id: stripe_bank_account.id)
+					bank_account.update!(stripe_bank_account_id: stripe_bank_account.id, is_verified: true)
 
 					render json: {status: 201, success: true, data: BankAccountSerializer.new(bank_account).serializable_hash[:data], message: "Bank Account created successfully"}, status: :created
 				end
