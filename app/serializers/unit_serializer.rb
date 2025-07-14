@@ -1,5 +1,5 @@
 class UnitSerializer < BaseSerializer
-	attributes :id, :unit_number, :address, :rooms, :bathrooms, :area
+	attributes :id, :unit_number, :allocation, :address, :rooms, :bathrooms, :area
 
 	attribute :address do |object|
 		full_address object
@@ -7,6 +7,10 @@ class UnitSerializer < BaseSerializer
 
 	attribute :rooms do |object|
 		object&.unit_bedrooms
+	end
+
+	attribute :allocation do |object|
+		object.allocation.round(2) rescue 0.0
 	end
 
 	attribute :bathrooms do |object|

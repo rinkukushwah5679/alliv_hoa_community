@@ -1,5 +1,5 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :status, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area
+	attributes :id, :name, :status, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
 
 	attribute :association_name do |object|
 		object&.custom_association&.name rescue nil
@@ -15,6 +15,10 @@ class UnitDetailsSerializer < BaseSerializer
 
 	attribute :area do |object|
 		object&.surface_area
+	end
+
+	attribute :allocation do |object|
+		object.allocation.round(2) rescue 0.0
 	end
 
 	attribute :ownership do |object|
