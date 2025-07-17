@@ -40,8 +40,19 @@ class Association < ApplicationRecord
 
   def validate_units_limit
     return unless units.present?
+    # max_units = user&.number_units_subscribe || 0
+    subs = user.subscriptions.where(status: "active").last
+    unless subs.present?
+      errors.add(:base, "You have no active subscription.")
+      return
+    end
 
-    max_units = user&.number_units_subscribe || 0
+    if subs.end_date.blank? || subs.end_date <= Time.current
+      errors.add(:base, "Your subscription has expired.")
+      return
+    end
+    # max_units = user&.number_units_subscribe || 0
+    max_units = subs&.units || 0
     existing_units_count = Unit.joins(:custom_association).where(associations: { property_manager_id: property_manager_id }).count
 
     total_units = existing_units_count + units.select(&:new_record?).count
