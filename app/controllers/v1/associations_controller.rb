@@ -53,6 +53,25 @@ module V1
 			end
 		end
 
+		#For plaid
+		# def create
+		# 	begin
+		# 	  association = current_user.associations.new(association_params)
+		# 	  if association.save
+		# 	  	plaid_public_tokens = params[:association][:bank_accounts_attributes] rescue ""
+		# 	  	if plaid_public_tokens.present?
+		# 	  		# association = Association.find "1aef32d9-4669-496d-b1c6-ae6fcb2c3041"
+		# 				bank_accounts = create_plaid_bank_account(association, plaid_public_tokens)
+		# 	  	end
+		# 	    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association created successfully"}, status: :created
+		# 	  else
+		# 	    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
+		# 	  end
+		#   rescue StandardError => e
+		# 		render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
+		# 	end
+		# end
+
 		def update
 			begin
 				if @association.update(association_params)
@@ -171,6 +190,20 @@ module V1
 				unit_files_attributes:[:id, :document, :category_name, :_destroy]])
 		end
 
+		#For plaid
+		# def association_params
+		# 	params.require(:association).permit(:name, :telephone_no, :email, :web_url, :is_active, :status,
+		# 	association_address_attributes: [:id, :street, :building_no, :zip_code, :state, :city, :_destroy],
+	  #   association_due_attributes: [:id, :distribution_type, :amount, :frequency, :start_date],
+	  #   association_late_payment_fee_attributes: [:id, :amount, :frequency],
+	  #   special_assesments_attributes: [:id, :distribution_type, :amount, :frequency, :start_date],
+	  #   tax_information_attributes: [:id, :tax_payer_type, :tax_payer_id],
+	  #   community_association_managers_attributes: [:id, :user_id, :_destroy],
+	  #   units_attributes: [:id, :name, :unit_number, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :notice_document, :description, :_destroy, ownership_account_attributes: [:id, :unit_owner_id, :first_name, :last_name, :phone_number, :email, :is_owner_association_board_member, :is_tenant_occupies_unit, :tenant_id, :tenant_first_name, :tenant_last_name, :tenant_phone_number, :tenant_email, :date_of_purchase, :inheritance_date],
+		# 		unit_financials_attributes: [:id, :amount, :frequency, :start_date, :_destroy],
+		# 		unit_files_attributes:[:id, :document, :category_name, :_destroy]])
+		# end
+
 		def set_user
 			#Is current_user
 			@user = User.find_by(id: params[:user_id])
@@ -222,6 +255,103 @@ module V1
       end
       failed_accounts
 		end
+
+		#For plaid
+		# def create_plaid_bank_account(association, plaid_public_tokens)
+		# 	plaid_public_tokens.keys.each do |key|
+		# 		token = plaid_public_tokens[key]["public_token"]
+		# 		response = HTTParty.post("#{ENV['PLAID_URL']}/item/public_token/exchange", {
+		# 			headers: { 'Content-Type' => 'application/json' },
+		# 			body: {
+		# 				client_id: ENV["PLAID_CLIENT_ID"],
+		# 				secret: ENV["PLAID_SECRET"],
+		# 				public_token: token
+		# 			}.to_json
+		# 		})
+		# 		data = JSON.parse(response.body)
+		# 		return if data.include?("error_code")
+		# 		access_token = data["access_token"]
+		# 		return unless access_token.present?
+		# 		# access_token = "access-sandbox-70aa822c-c562-44e8-a4f6-eaa262610e36"
+		# 		accounts_response = HTTParty.post("#{ENV['PLAID_URL']}/auth/get", {
+		# 			headers: { 'Content-Type' => 'application/json' },
+		# 			body: {
+		# 				client_id: ENV["PLAID_CLIENT_ID"],
+		# 				secret: ENV["PLAID_SECRET"],
+		# 				access_token: access_token
+		# 			}.to_json
+		# 		})
+		# 		# access-sandbox-70aa822c-c562-44e8-a4f6-eaa262610e36
+		# 		plaid_bank_accounts = accounts_response["accounts"]
+		# 		ach = accounts_response["numbers"]["ach"]
+		# 		plaid_bank_accounts.each do |ba|
+		# 			account_id = ba["account_id"]
+		# 			acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
+		# 			bank = association.bank_accounts.new
+		# 			bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
+		# 			bank.bank_account_type = ba["subtype"]
+		# 			bank.account_number = acc_routing_number["account"]
+		# 			bank.routing_number = acc_routing_number["routing"]
+		# 			bank.recipient_name = association&.name
+		# 			bank.recipient_address = current_user&.address
+		# 			bank.access_token = access_token
+		# 			bank.geteway_account_id = ba["account_id"]
+		# 			bank.available_balance = ba["balances"]["available"].to_f rescue 0.0
+		# 			bank.current_balance = ba["balances"]["current"].to_f rescue 0.0
+		# 			bank.iso_currency_code = ba["balances"]["iso_currency_code"] rescue ""
+		# 			bank.limit = ba["balances"]["limit"] rescue ""
+		# 			bank.unofficial_currency_code = ba["balances"]["unofficial_currency_code"] rescue ""
+		# 			bank.holder_category = ba["holder_category"]
+		# 			bank.mask = ba["mask"]
+		# 			bank.plaid_name = ba["name"]
+		# 			bank.official_name = ba["official_name"]
+		# 			bank.subtype = ba["subtype"]
+		# 			bank.plaid_type = ba["type"]
+		# 			bank.geteway_account_res = accounts_response
+		# 			bank.save
+		# 			create_stripe_bank_account_with_plaid(association, bank)
+		# 		end
+
+
+
+		# 		# bank_account_details = HTTParty.post("https://sandbox.plaid.com/accounts/balance/get", {
+		# 		# 	headers: { 'Content-Type' => 'application/json' },
+		# 		# 	body: {
+		# 		# 		client_id: ENV["PLAID_CLIENT_ID"],
+		# 		# 		secret: ENV["PLAID_SECRET"],
+		# 		# 		access_token: access_token,
+		# 		# 		options: {
+		# 		# 			account_ids: ["L7JE9D43GLHjmnXQ3ywJi8j38g1eqrFkJ1WPL"]
+		# 		# 		}
+		# 		# 	}.to_json
+		# 		# })
+
+		# 	end
+		# end
+
+		#For plaid
+		# def create_stripe_bank_account_with_plaid(association, bank)
+    #   # association.bank_accounts.where(stripe_bank_account_id:[nil, ""]).each do |bank_account|
+    #     begin
+    #       stripe_bank_account = Stripe::Account.create_external_account(
+    #         association.stripe_account_id,
+    #         {
+    #           external_account: {
+    #             object: "bank_account",
+    #             country: bank.country || "US",
+    #             currency: "usd",
+    #             account_holder_name: bank.recipient_name || association.name,
+    #             account_holder_type: "individual",
+    #             routing_number: "110000000", #"bank.routing_number"
+    #             account_number: "000123456789" #"bank.account_number"
+    #           }
+    #         }
+    #       )
+    #       bank.update_columns(stripe_bank_account_id: stripe_bank_account.id, is_verified: true)
+    #     rescue Stripe::StripeError => e
+    #     end
+    #   # end
+		# end
 
 	  # def create_stripe_account_id(association)
 	  #   return if test_environment?

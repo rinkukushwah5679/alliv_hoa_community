@@ -81,3 +81,4 @@ gem 'rack-cors'
 gem "exception_notification"
 gem 'acts_as_paranoid', "~> 0.10.3"
 gem 'paper_trail'
+gem 'httparty'

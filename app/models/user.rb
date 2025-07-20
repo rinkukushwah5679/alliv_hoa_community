@@ -16,7 +16,11 @@ class User < ApplicationRecord
 
   # has_many :bank_accounts, class_name: "BankAccount", foreign_key: :created_by, dependent: :destroy
   has_many :bank_accounts, as: :bank_accountable, dependent: :destroy
-
+  has_many :subscriptions, dependent: :destroy
+  def is_subscription_active
+    subscription = subscriptions.where(status: "active").last
+    return subscription.present? && subscription.end_date.present? && subscription.end_date >= Time.current
+  end
   # def can_create_more_units?(user)
   #   Unit.joins(:custom_association).where(associations: { property_manager_id: user.id }).count < (user.number_units_subscribe || 0)
   # end

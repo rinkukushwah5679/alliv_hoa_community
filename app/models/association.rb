@@ -1,5 +1,6 @@
 class Association < ApplicationRecord
   acts_as_paranoid
+  default_scope { order(created_at: :desc) }
   validates :name, presence: true
   validates :telephone_no, presence: true
   validates :email, presence: true

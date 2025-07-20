@@ -1,5 +1,5 @@
 class Walkthrough < ApplicationRecord
-
+	default_scope { order(created_at: :asc) }
 	has_rich_text :facade
 	has_many_attached :facade_attachments
 
