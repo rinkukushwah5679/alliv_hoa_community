@@ -16,9 +16,13 @@ Rails.application.routes.draw do
       collection do
         get :property_owners
       end
-      resources :bank_accounts
+      resources :bank_accounts do
+        post :create_bank_account, on: :collection #With plaid
+      end
       resources :associations do
         post :create_stripe_account, on: :member
+        # post :create_association_with_plaid, on: :collection
+        # put :update_association_with_plaid, on: :member
       end
       resources :walkthroughs
       resources :units, except: [:create] do

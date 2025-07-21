@@ -73,6 +73,112 @@ module V1
 			render json: {status: 200, success: true, data: nil, message: "Bank Account successfully destroyed."}, status: :ok
 		end
 
+		def create_bank_account
+			begin
+				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
+
+				public_token = params[:public_token].to_s
+
+				response = HTTParty.post("#{ENV['PLAID_URL']}/item/public_token/exchange", {
+					headers: { 'Content-Type' => 'application/json' },
+					body: {
+						client_id: ENV["PLAID_CLIENT_ID"],
+						secret: ENV["PLAID_SECRET"],
+						public_token: public_token
+					}.to_json
+				})
+				data = JSON.parse(response.body)
+				return render json: {status: 422, success: false, data: nil, message: data["error_message"]} if data.include?("error_code")
+				access_token = data["access_token"]
+				# access_token = "access-sandbox-70aa822c-c562-44e8-a4f6-eaa262610e36"
+				return render json: {status: 422, success: false, data: nil, message: "Access token not valid"} unless access_token.present?
+
+				accounts_response = HTTParty.post("#{ENV['PLAID_URL']}/auth/get", {
+					headers: { 'Content-Type' => 'application/json' },
+					body: {
+						client_id: ENV["PLAID_CLIENT_ID"],
+						secret: ENV["PLAID_SECRET"],
+						access_token: access_token
+					}.to_json
+				})
+
+				plaid_bank_accounts = accounts_response["accounts"]
+				ach = accounts_response["numbers"]["ach"]
+				plaid_bank_accounts.each do |ba|
+					account_id = ba["account_id"]
+					acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
+					bank = accountable_object.bank_accounts.new
+					bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
+					bank.bank_account_type = ba["subtype"]
+					bank.account_number = acc_routing_number["account"]
+					bank.routing_number = acc_routing_number["routing"]
+					bank.recipient_name = current_user&.full_name
+					bank.recipient_address = current_user&.address
+					bank.access_token = access_token
+					bank.geteway_account_id = ba["account_id"]
+					bank.available_balance = ba["balances"]["available"].to_f rescue 0.0
+					bank.current_balance = ba["balances"]["current"].to_f rescue 0.0
+					bank.iso_currency_code = ba["balances"]["iso_currency_code"] rescue ""
+					bank.limit = ba["balances"]["limit"] rescue ""
+					bank.unofficial_currency_code = ba["balances"]["unofficial_currency_code"] rescue ""
+					bank.holder_category = ba["holder_category"]
+					bank.mask = ba["mask"]
+					bank.plaid_name = ba["name"]
+					bank.official_name = ba["official_name"]
+					bank.subtype = ba["subtype"]
+					bank.plaid_type = ba["type"]
+					bank.geteway_account_res = accounts_response
+					bank.save
+					create_stripe_bank_account_with_plaid(accountable_object, bank)
+				end
+				if accountable_object.class.name == "Association"
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				else
+					bank_accounts = current_user.bank_accounts
+					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
+		end
+
+		#For plaid
+		def create_stripe_bank_account_with_plaid(accountable_object, bank)
+      begin
+        stripe_bank_account = Stripe::Account.create_external_account(
+          accountable_object.stripe_account_id,
+          {
+            external_account: {
+              object: "bank_account",
+              country: bank.country || "US",
+              currency: "usd",
+              account_holder_name: bank.recipient_name || "Test",
+              account_holder_type: "individual",
+              routing_number: "110000000", #"bank.routing_number"
+              account_number: "000123456789" #"bank.account_number"
+            }
+          }
+        )
+        bank.update_columns(stripe_bank_account_id: stripe_bank_account.id, is_verified: true)
+      rescue Stripe::StripeError => e
+      end
+		end
+
+		def fetch_balance
+			# bank_account_details = HTTParty.post("https://sandbox.plaid.com/accounts/balance/get", {
+				# 	headers: { 'Content-Type' => 'application/json' },
+				# 	body: {
+				# 		client_id: ENV["PLAID_CLIENT_ID"],
+				# 		secret: ENV["PLAID_SECRET"],
+				# 		access_token: access_token,
+				# 		options: {
+				# 			account_ids: ["L7JE9D43GLHjmnXQ3ywJi8j38g1eqrFkJ1WPL"]
+				# 		}
+				# 	}.to_json
+				# })
+		end
+
 		private
 		def set_bank
 			@bank_account = current_user.bank_accounts.find_by_id(params[:id]) if params[:id]
