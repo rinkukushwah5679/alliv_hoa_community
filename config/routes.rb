@@ -18,6 +18,7 @@ Rails.application.routes.draw do
       end
       resources :bank_accounts do
         post :create_bank_account, on: :collection #With plaid
+        get :fetch_balance_from_plaid, on: :member
       end
       resources :associations do
         post :create_stripe_account, on: :member

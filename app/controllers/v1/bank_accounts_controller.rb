@@ -167,18 +167,30 @@ module V1
       end
 		end
 
-		def fetch_balance
-			# bank_account_details = HTTParty.post("https://sandbox.plaid.com/accounts/balance/get", {
-				# 	headers: { 'Content-Type' => 'application/json' },
-				# 	body: {
-				# 		client_id: ENV["PLAID_CLIENT_ID"],
-				# 		secret: ENV["PLAID_SECRET"],
-				# 		access_token: access_token,
-				# 		options: {
-				# 			account_ids: ["L7JE9D43GLHjmnXQ3ywJi8j38g1eqrFkJ1WPL"]
-				# 		}
-				# 	}.to_json
-				# })
+		def fetch_balance_from_plaid
+			begin
+				@bank_account_plaid = BankAccount.find_by_id(params[:id]) if params[:id]
+				unless @bank_account_plaid.present? && @bank_account_plaid.access_token.present?
+				  return render json: { status: 404, success: false, data: nil, message: "Bank not found or invalid" }, status: :not_found
+				end
+
+				bank_account_details = HTTParty.post("#{ENV['PLAID_URL']}/accounts/balance/get", {
+					headers: { 'Content-Type' => 'application/json' },
+					body: {
+						client_id: ENV["PLAID_CLIENT_ID"],
+						secret: ENV["PLAID_SECRET"],
+						access_token: @bank_account_plaid&.access_token.to_s,
+						options: {
+							account_ids: [@bank_account_plaid&.geteway_account_id.to_s]
+						}
+					}.to_json
+				})
+				bank_accounts = bank_account_details["accounts"][0]["balances"]
+				@bank_account_plaid.update(available_balance: bank_accounts["available"].to_f, current_balance: bank_accounts["current"].to_f)
+				render json: {status: 200, success: true, data: BankAccountSerializer.new(@bank_account_plaid.reload).serializable_hash[:data], message: "Successfuly fetch balance"}, status: :ok
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
 		end
 
 		private
