@@ -93,7 +93,16 @@ module V1
 			begin
 				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
 				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
-
+				unless accountable_object.stripe_account_id.present?
+					stripe_account_id = Stripe::Account.create({
+						type: 'custom',
+						country: 'US',
+						email: accountable_object.email,
+						capabilities: { transfers: { requested: true } },
+						business_type: 'individual'
+					})['id']
+					accountable_object.update_column(:stripe_account_id, stripe_account_id)
+				end
 				public_token = params[:public_token].to_s
 
 				response = HTTParty.post("#{ENV['PLAID_URL']}/item/public_token/exchange", {
@@ -124,7 +133,7 @@ module V1
 				plaid_bank_accounts.each do |ba|
 					account_id = ba["account_id"]
 					acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
-					bank = accountable_object.bank_accounts.new
+					bank = accountable_object.reload.bank_accounts.new
 					bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
 					bank.bank_account_type = ba["subtype"]
 					bank.account_number = acc_routing_number["account"]
