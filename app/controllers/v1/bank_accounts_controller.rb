@@ -145,6 +145,7 @@ module V1
 
 		#For plaid
 		def create_stripe_bank_account_with_plaid(accountable_object, bank)
+			Rails.logger.info " =============Received accountable: #{accountable_object}  and #{bank}=============="
       begin
         stripe_bank_account = Stripe::Account.create_external_account(
           accountable_object.stripe_account_id,
@@ -162,6 +163,7 @@ module V1
         )
         bank.update_columns(stripe_bank_account_id: stripe_bank_account.id, is_verified: true)
       rescue Stripe::StripeError => e
+				Rails.logger.info " =============Stripe Error: #{e.message}=============="
       end
 		end
 
