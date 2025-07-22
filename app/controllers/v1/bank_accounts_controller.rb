@@ -3,9 +3,25 @@ module V1
 		before_action :set_bank, only: [:show, :destroy, :update]
 		# rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity_response
 		def index
-			bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
-			total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
-			render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
+			begin
+				bank_accounts = BankAccount.all
+
+				if params[:filter] == 'mine'
+					bank_accounts = bank_accounts.for_current_user(current_user)
+				elsif params[:association_id].present?
+					bank_accounts = bank_accounts.for_specific_association(params[:association_id])
+				else
+					association_ids = current_user.associations.pluck(:id)
+					bank_accounts = bank_accounts.for_association_ids(association_ids)
+				end
+				totle_balance = bank_accounts.present? ? bank_accounts.sum(:available_balance).to_f : 0.0
+				bank_accounts = bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				# bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
+				render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], totle_balance: totle_balance, pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
+			end
 		end
 
 		def show

@@ -10,4 +10,15 @@ class BankAccount < ApplicationRecord
   belongs_to :bank_accountable, polymorphic: true, optional: true
   belongs_to :user, optional: true
   enum :account_purpose, {operating: "operating", reserve: "reserve"}
+  scope :for_current_user, ->(user) {
+    where(bank_accountable_type: 'User', bank_accountable_id: user.id)
+  }
+
+  scope :for_association_ids, ->(ids) {
+    where(bank_accountable_type: 'Association', bank_accountable_id: ids)
+  }
+
+  scope :for_specific_association, ->(association_id) {
+    where(bank_accountable_type: 'Association', bank_accountable_id: association_id)
+  }
 end
