@@ -196,6 +196,16 @@ module V1
 
       association.bank_accounts.where(stripe_bank_account_id:[nil, ""]).each do |bank_account|
         begin
+					unless association.stripe_account_id.present?
+						stripe_account_id = Stripe::Account.create({
+							type: 'custom',
+							country: 'US',
+							email: association.email,
+							capabilities: { transfers: { requested: true } },
+							business_type: 'individual'
+						})['id']
+						association.update!(stripe_account_id: stripe_account_id)
+					end
           stripe_bank_account = Stripe::Account.create_external_account(
             association.stripe_account_id,
             {
