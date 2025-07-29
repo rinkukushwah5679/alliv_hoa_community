@@ -2,7 +2,7 @@ module V1
 	class UnitsController < ApplicationController
 		# before_action :set_user
 		# before_action :set_association#, only: [:index, :show, :update, :destroy]
-		before_action :set_unit, only: [:show, :update, :destroy, :unit_history]
+		before_action :set_unit, only: [:show, :update, :destroy, :unit_history, :autopay_enabled]
 		def index
 			begin
 
@@ -86,6 +86,18 @@ module V1
 
 		def unit_history
 			render json: {status: 200, success: true, data: HistoriesSerializer.new(@unit.versions).serializable_hash[:data], message: "User History"}
+		end
+
+		def autopay_enabled
+			begin
+				if @unit.update(autopay_status: "Active")
+					render json: {status: 200, success: true, data: nil, message: "Autopay enabled successfully"}
+				else
+					render json: {status: 422, success: false, data: nil, message: @unit.errors.full_messages.join(", ")}
+				end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
 		end
 
 		private

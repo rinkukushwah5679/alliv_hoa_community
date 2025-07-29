@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       resources :walkthroughs
       resources :units, except: [:create] do
         get :unit_history, on: :member
+        post :autopay_enabled, on: :member
       end
     end
     get '/download_file', to: 'downloads#download_file'
