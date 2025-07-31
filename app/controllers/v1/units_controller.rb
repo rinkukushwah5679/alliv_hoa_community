@@ -90,10 +90,26 @@ module V1
 
 		def autopay_enabled
 			begin
-				if @unit.update(autopay_status: "Active")
-					render json: {status: 200, success: true, data: nil, message: "Autopay enabled successfully"}
+				auto = UnitAutopay.find_or_initialize_by(unit_id: @unit.id, user_id: current_user.id)
+				if auto.persisted? && auto.is_active?
+					# Already active, so disable it
+					auto.is_active = false
+					message = "Autopay disabled successfully"
 				else
-					render json: {status: 422, success: false, data: nil, message: @unit.errors.full_messages.join(", ")}
+					# Either new record or inactive, so enable it
+					auto.is_active = true
+					auto.amount = params[:amount] if params[:amount].present?
+					auto.payment_method_id = params[:payment_method_id] if params[:payment_method_id].present?
+					auto.bank_account_id = params[:bank_account_id] if params[:bank_account_id].present?
+					auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
+					auto.total_amount = params[:total_amount] if params[:total_amount].present?
+					message = "Autopay enabled successfully"
+				end
+
+				if auto.save
+					render json: {status: 200, success: true, data: nil, message: message}
+				else
+					render json: {status: 422, success: false, data: nil, message: auto.errors.full_messages.join(", ")}
 				end
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }

@@ -45,7 +45,17 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :autopay_status do |object|
-		object.autopay_status rescue nil
+		begin
+			autopay = UnitAutopay.where(unit_id: object.id).last
+			if autopay.persisted? && autopay.is_active?
+				"Active"
+			else
+				"InActive"
+			end
+			# object.autopay_status rescue nil
+		rescue => e
+			"InActive"
+		end
 	end
 
 	attribute :attach_files do |object|
