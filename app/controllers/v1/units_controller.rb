@@ -90,6 +90,7 @@ module V1
 
 		def autopay_enabled
 			begin
+				# it's will be set and remove on payment gateway
 				auto = UnitAutopay.find_or_initialize_by(unit_id: @unit.id, user_id: current_user.id)
 				if auto.persisted? && auto.is_active?
 					# Already active, so disable it

@@ -19,6 +19,7 @@ class OwnershipAccount < ApplicationRecord
     return if previous_owner_id.blank?
 
     autopay = UnitAutopay.find_by(unit_id: unit_id, user_id: previous_owner_id)
+    # it's will be set and remove on payment gateway
     if autopay&.is_active?
       autopay.update(is_active: false)
     end
