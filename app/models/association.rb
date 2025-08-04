@@ -22,7 +22,7 @@ class Association < ApplicationRecord
   accepts_nested_attributes_for :special_assesments, allow_destroy: true
   belongs_to :user, class_name: "User", foreign_key: :property_manager_id, optional: true
   has_many :walkthroughs, dependent: :destroy
-  validate :validate_units_limit
+  # validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
   after_create :create_stripe_account_id
