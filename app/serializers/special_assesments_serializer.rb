@@ -7,6 +7,6 @@ class SpecialAssesmentsSerializer < BaseSerializer
 
   attribute :end_date do |object|
     #unclear, have to ask from Kam
-    nil
+    object.end_date
   end
 end
