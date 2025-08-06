@@ -3,7 +3,7 @@ class AssociationDue < ApplicationRecord
 	enum :frequency, %w(Monthly OneTime)
 	enum :due_type, {"dues" => "dues", "special_assesment" => "special_assesment"}
 	validates :start_date, presence: true
-	validate :start_date_cannot_be_in_the_past, if: -> { start_date.present? && will_save_change_to_start_date? }
+	# validate :start_date_cannot_be_in_the_past, if: -> { start_date.present? && will_save_change_to_start_date? }
 
   validates :end_date, presence: true, if: -> { frequency == "Monthly" && due_type == "special_assesment" }
 
