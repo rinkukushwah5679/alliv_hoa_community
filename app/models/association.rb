@@ -1,25 +1,26 @@
 class Association < ApplicationRecord
   acts_as_paranoid
+  # attr_accessor :special_assesments
   default_scope { order(created_at: :desc) }
   validates :name, presence: true
   validates :telephone_no, presence: true
   validates :email, presence: true
   has_one :association_address, dependent: :destroy
   has_many :bank_accounts, as: :bank_accountable, dependent: :destroy
-  has_one :association_due, dependent: :destroy
+  has_many :association_dues, dependent: :destroy
   has_one :association_late_payment_fee, dependent: :destroy
   has_one :tax_information, dependent: :destroy
   has_many :community_association_managers, dependent: :destroy
   has_many :units, dependent: :destroy
-  has_many :special_assesments, dependent: :destroy
+  # has_many :special_assesments, dependent: :destroy
   accepts_nested_attributes_for :association_address#, allow_destroy: true
-  accepts_nested_attributes_for :association_due
+  accepts_nested_attributes_for :association_dues, allow_destroy: true
   accepts_nested_attributes_for :association_late_payment_fee
   accepts_nested_attributes_for :tax_information
   accepts_nested_attributes_for :community_association_managers, allow_destroy: true
   accepts_nested_attributes_for :bank_accounts, allow_destroy: true
   accepts_nested_attributes_for :units, allow_destroy: true
-  accepts_nested_attributes_for :special_assesments, allow_destroy: true
+  # accepts_nested_attributes_for :special_assesments, allow_destroy: true
   belongs_to :user, class_name: "User", foreign_key: :property_manager_id, optional: true
   has_many :walkthroughs, dependent: :destroy
   # validate :validate_units_limit
@@ -30,6 +31,20 @@ class Association < ApplicationRecord
   # def status
   #   is_active ? "Active" : "Inactive"
   # end
+
+  # def special_assesments_attributes=(attributes)
+  #   attributes.values.each do |special_attrs|
+  #     if special_attrs[:id].present?
+  #       # Update existing record
+  #       special = self.association_dues.find_by(id: special_attrs[:id], association_id: self.id, due_type: "special_assesment")
+  #       special.update(special_attrs) if special
+  #     else
+  #       # Create new record
+  #       self.association_dues.create(special_attrs)
+  #     end
+  #   end
+  # end
+
 
   def set_is_active_flag
     if status == "Active"
@@ -61,6 +76,14 @@ class Association < ApplicationRecord
     if total_units > max_units
       errors.add(:base, "You can only create up to #{max_units} units.")
     end
+  end
+
+  def association_due
+    association_dues.where(due_type: "dues").last
+  end
+
+  def special_assesments
+    association_dues.where(due_type: "special_assesment")
   end
 
   private

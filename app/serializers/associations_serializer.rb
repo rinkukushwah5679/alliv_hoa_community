@@ -14,7 +14,7 @@ class AssociationsSerializer < BaseSerializer
   end
 
   attribute :dues do |object|
-  	object.association_due
+    object.association_due
   end
 
   attribute :late_payment_fee do |object|
