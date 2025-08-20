@@ -164,7 +164,8 @@ module V1
 
 		# Reusable units fetcher
 		def fetch_units_for_current_user
-			if current_user.has_role?(:Resident)
+			# if current_user.has_role?(:Resident)
+			if current_user.current_role == "Resident"
 				if @association
 					Unit.joins(:ownership_account).where(
 						ownership_accounts: {
