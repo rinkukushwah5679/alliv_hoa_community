@@ -218,6 +218,30 @@ module V1
 			end
 		end
 
+		def create_funding_account
+			begin
+				funding_params = params[:funding_account_data]
+				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+				bank = accountable_object.reload.bank_accounts.new
+				bank.bank_account_type = funding_params[:AccountType].to_s.downcase
+				bank.account_number = funding_params[:BankAccount][:AccountLastFour]
+				bank.routing_number = funding_params[:BankAccount][:RoutingNumber]
+				bank.recipient_name = funding_params[:NameOnAccount]
+				bank.recipient_address = current_user&.address
+				bank.funding_account_id = funding_params[:FundingAccountId].to_i
+				bank.unityfi_bank_details_json = funding_params.to_json
+				bank.save
+				if accountable_object.class.name == "Association"
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				else
+					bank_accounts = current_user.bank_accounts
+					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
+		end
+
 		private
 		def set_bank
 			@bank_account = current_user.bank_accounts.find_by_id(params[:id]) if params[:id]

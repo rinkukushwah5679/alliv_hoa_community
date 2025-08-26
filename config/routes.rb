@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       resources :bank_accounts do
         post :create_bank_account, on: :collection #With plaid
         get :fetch_balance_from_plaid, on: :member
+        post :create_funding_account, on: :collection #With unityfi
       end
       resources :associations do
         post :create_stripe_account, on: :member
