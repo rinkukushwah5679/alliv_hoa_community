@@ -26,7 +26,7 @@ class Association < ApplicationRecord
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
-  after_create :create_stripe_account_id
+  after_create :create_stripe_account_id, :create_user_on_unityfi
 
   # def status
   #   is_active ? "Active" : "Inactive"
@@ -103,5 +103,10 @@ class Association < ApplicationRecord
       business_type: 'individual'
     })['id']
     self.update_column(:stripe_account_id, stripe_account_id)
+  end
+
+  def create_user_on_unityfi
+    unityfi_service = Unityfi.new
+    unityfi_service.create_location_user(self)
   end
 end

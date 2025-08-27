@@ -1,0 +1,2 @@
+class UnityfiAuthenticate < ApplicationRecord
+end

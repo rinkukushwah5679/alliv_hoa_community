@@ -91,18 +91,21 @@ module V1
 
 		def create_bank_account
 			begin
-				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
-				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
-				unless accountable_object.stripe_account_id.present?
-					stripe_account_id = Stripe::Account.create({
-						type: 'custom',
-						country: 'US',
-						email: accountable_object.email,
-						capabilities: { transfers: { requested: true } },
-						business_type: 'individual'
-					})['id']
-					accountable_object.update_column(:stripe_account_id, stripe_account_id)
-				end
+				bank = BankAccount.find_by_id(params[:bank_id]) if params[:bank_id]
+				return render json: {status: 404, success: false, data: nil, message: "Bank Account not found"}, :status => :not_found unless bank.present?
+
+				# accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+				# return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
+				# unless accountable_object.stripe_account_id.present?
+				# 	stripe_account_id = Stripe::Account.create({
+				# 		type: 'custom',
+				# 		country: 'US',
+				# 		email: accountable_object.email,
+				# 		capabilities: { transfers: { requested: true } },
+				# 		business_type: 'individual'
+				# 	})['id']
+				# 	accountable_object.update_column(:stripe_account_id, stripe_account_id)
+				# end
 				public_token = params[:public_token].to_s
 
 				response = HTTParty.post("#{ENV['PLAID_URL']}/item/public_token/exchange", {
@@ -116,7 +119,8 @@ module V1
 				data = JSON.parse(response.body)
 				return render json: {status: 422, success: false, data: nil, message: data["error_message"]} if data.include?("error_code")
 				access_token = data["access_token"]
-				# access_token = "access-sandbox-70aa822c-c562-44e8-a4f6-eaa262610e36"
+				# access_token = "access-sandbox-84e7b618-36da-4cb7-8de5-416e6ae7392d"
+				# bank_account_id = "jv14lyBVkJiE5vma8VL6CDWePv7Q7Wc69yjZq"
 				return render json: {status: 422, success: false, data: nil, message: "Access token not valid"} unless access_token.present?
 
 				accounts_response = HTTParty.post("#{ENV['PLAID_URL']}/auth/get", {
@@ -133,13 +137,13 @@ module V1
 				plaid_bank_accounts.each do |ba|
 					account_id = ba["account_id"]
 					acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
-					bank = accountable_object.reload.bank_accounts.new
+					# bank = accountable_object.reload.bank_accounts.new
 					bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
-					bank.bank_account_type = ba["subtype"]
-					bank.account_number = acc_routing_number["account"]
-					bank.routing_number = acc_routing_number["routing"]
-					bank.recipient_name = current_user&.full_name
-					bank.recipient_address = current_user&.address
+					# bank.bank_account_type = ba["subtype"]
+					# bank.account_number = acc_routing_number["account"]
+					# bank.routing_number = acc_routing_number["routing"]
+					# bank.recipient_name = current_user&.full_name
+					# bank.recipient_address = current_user&.address
 					bank.access_token = access_token
 					bank.geteway_account_id = ba["account_id"]
 					bank.available_balance = ba["balances"]["available"].to_f rescue 0.0
@@ -155,10 +159,12 @@ module V1
 					bank.plaid_type = ba["type"]
 					bank.geteway_account_res = accounts_response
 					bank.save
-					create_stripe_bank_account_with_plaid(accountable_object, bank)
+					bank.update_columns(is_verified: true)
+					# create_stripe_bank_account_with_plaid(accountable_object, bank)
 				end
-				if accountable_object.class.name == "Association"
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				@bank_accountable = bank.bank_accountable
+				if @bank_accountable.class.name == "Association"
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(@bank_accountable).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
 				else
 					bank_accounts = current_user.bank_accounts
 					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
@@ -222,6 +228,8 @@ module V1
 			begin
 				funding_params = params[:funding_account_data]
 				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
+
 				bank = accountable_object.reload.bank_accounts.new
 				bank.bank_account_type = funding_params[:AccountType].to_s.downcase
 				bank.account_number = funding_params[:BankAccount][:AccountLastFour]
