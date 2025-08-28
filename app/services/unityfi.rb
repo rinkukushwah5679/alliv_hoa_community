@@ -118,9 +118,11 @@ class Unityfi
 		}.to_json
 
 		response = https.request(request)
+		data = JSON.parse(response.body)
 		if response.code == "201"
-			data = JSON.parse(response.body)
-			bank.update_columns(funding_account_id: data["LocationUserID"], unityfi_bank_details_json: data.to_json, is_verified: true)
+			bank.update_columns(funding_account_id: data["FundingAccountId"], unityfi_bank_details_json: data.to_json, is_verified: true)
+		else
+			bank.update_columns(unityfi_bank_details_json: data.to_json)
 		end
 		puts response.read_body
 	end
