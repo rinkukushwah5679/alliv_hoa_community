@@ -1,6 +1,6 @@
 class BankAccount < ApplicationRecord
   default_scope { order(created_at: :asc) }
-	# validates :name, presence: true
+	validates :name, presence: true
 	# enum :bank_account_type, { checking: "checking", savings: "savings" }
 	belongs_to :creator, class_name: "User", foreign_key: :created_by, optional: true#, primary_key: :id
   belongs_to :updater, class_name: "User", foreign_key: :updated_by, optional: true#, primary_key: :id

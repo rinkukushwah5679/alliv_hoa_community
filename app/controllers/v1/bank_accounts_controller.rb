@@ -91,11 +91,10 @@ module V1
 
 		def create_bank_account
 			begin
-				bank = BankAccount.find_by_id(params[:bank_id]) if params[:bank_id]
-				return render json: {status: 404, success: false, data: nil, message: "Bank Account not found"}, :status => :not_found unless bank.present?
+				# bank = BankAccount.find_by_id(params[:bank_id]) if params[:bank_id]
 
-				# accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
-				# return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
+				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
 				# unless accountable_object.stripe_account_id.present?
 				# 	stripe_account_id = Stripe::Account.create({
 				# 		type: 'custom',
@@ -137,13 +136,13 @@ module V1
 				plaid_bank_accounts.each do |ba|
 					account_id = ba["account_id"]
 					acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
-					# bank = accountable_object.reload.bank_accounts.new
+					bank = accountable_object.reload.bank_accounts.new
 					bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
-					# bank.bank_account_type = ba["subtype"]
-					# bank.account_number = acc_routing_number["account"]
-					# bank.routing_number = acc_routing_number["routing"]
-					# bank.recipient_name = current_user&.full_name
-					# bank.recipient_address = current_user&.address
+					bank.bank_account_type = ba["subtype"]
+					bank.account_number = acc_routing_number["account"]
+					bank.routing_number = acc_routing_number["routing"]
+					bank.recipient_name = current_user&.full_name
+					bank.recipient_address = current_user&.address
 					bank.access_token = access_token
 					bank.geteway_account_id = ba["account_id"]
 					bank.available_balance = ba["balances"]["available"].to_f rescue 0.0
@@ -159,12 +158,12 @@ module V1
 					bank.plaid_type = ba["type"]
 					bank.geteway_account_res = accounts_response
 					bank.save
-					bank.update_columns(is_verified: true)
+					# bank.update_columns(is_verified: true)
 					# create_stripe_bank_account_with_plaid(accountable_object, bank)
+					create_funding_account_unityfi(accountable_object, bank)
 				end
-				@bank_accountable = bank.bank_accountable
-				if @bank_accountable.class.name == "Association"
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(@bank_accountable).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+				if accountable_object.class.name == "Association"
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
 				else
 					bank_accounts = current_user.bank_accounts
 					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
@@ -224,30 +223,38 @@ module V1
 			end
 		end
 
-		def create_funding_account
+		def create_funding_account_unityfi(location_user, bank)
 			begin
-				funding_params = params[:funding_account_data]
-				accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
-				return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
-
-				bank = accountable_object.reload.bank_accounts.new
-				bank.bank_account_type = funding_params[:AccountType].to_s.downcase
-				bank.account_number = funding_params[:BankAccount][:AccountLastFour]
-				bank.routing_number = funding_params[:BankAccount][:RoutingNumber]
-				bank.recipient_name = funding_params[:NameOnAccount]
-				bank.recipient_address = current_user&.address
-				bank.funding_account_id = funding_params[:FundingAccountId].to_i
-				bank.unityfi_bank_details_json = funding_params.to_json
-				bank.save
-				if accountable_object.class.name == "Association"
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
-				else
-					bank_accounts = current_user.bank_accounts
-					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
-				end
+				unityfi_service = Unityfi.new
+    		unityfi_service.create_funding_account(location_user, bank)
 			rescue StandardError => e
-				render json: {status: 500, success: false, data: nil, message: e.message }
+				Rails.logger.info " =============Unityfi Error: #{e.message}=============="
 			end
+
+
+			# begin
+			# 	funding_params = params[:funding_account_data]
+			# 	accountable_object = params[:bank_accountable_type].camelize.constantize.find_by(id: params[:bank_accountable_id].to_s)
+			# 	return render json: {status: 422, success: false, data: nil, message: "#{params[:bank_accountable_type].camelize.constantize} not found"} unless accountable_object.present?
+
+			# 	bank = accountable_object.reload.bank_accounts.new
+			# 	bank.bank_account_type = funding_params[:AccountType].to_s.downcase
+			# 	bank.account_number = funding_params[:BankAccount][:AccountLastFour]
+			# 	bank.routing_number = funding_params[:BankAccount][:RoutingNumber]
+			# 	bank.recipient_name = funding_params[:NameOnAccount]
+			# 	bank.recipient_address = current_user&.address
+			# 	bank.funding_account_id = funding_params[:FundingAccountId].to_i
+			# 	bank.unityfi_bank_details_json = funding_params.to_json
+			# 	bank.save
+			# 	if accountable_object.class.name == "Association"
+			# 		render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+			# 	else
+			# 		bank_accounts = current_user.bank_accounts
+			# 		render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+			# 	end
+			# rescue StandardError => e
+			# 	render json: {status: 500, success: false, data: nil, message: e.message }
+			# end
 		end
 
 		private
