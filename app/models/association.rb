@@ -86,6 +86,10 @@ class Association < ApplicationRecord
     association_dues.where(due_type: "special_assesment")
   end
 
+  def primary_bank_account
+    bank_accounts.find_by(is_primary: true)
+  end
+
   private
   def test_environment?
     Rails.env.test?

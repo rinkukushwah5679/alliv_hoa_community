@@ -131,6 +131,12 @@ module V1
 					}.to_json
 				})
 
+				if accountable_object.class.name == "Association"
+					is_primary =  accountable_object.primary_bank_account
+				else
+					is_primary = accountable_object.primary_bank_account || accountable_object.primary_card
+				end
+
 				plaid_bank_accounts = accounts_response["accounts"]
 				ach = accounts_response["numbers"]["ach"]
 				plaid_bank_accounts.each do |ba|
@@ -157,6 +163,7 @@ module V1
 					bank.subtype = ba["subtype"]
 					bank.plaid_type = ba["type"]
 					bank.geteway_account_res = accounts_response
+					bank.is_primary = true unless is_primary
 					bank.save
 					# bank.update_columns(is_verified: true)
 					# create_stripe_bank_account_with_plaid(accountable_object, bank)
