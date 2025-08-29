@@ -225,7 +225,7 @@ module V1
 
 		def create_funding_account_unityfi(location_user, bank)
 			begin
-				unityfi_service = Unityfi.new
+				unityfi_service = UnityfiService.new
     		unityfi_service.create_funding_account(location_user, bank)
 			rescue StandardError => e
 				Rails.logger.info " =============Unityfi Error: #{e.message}=============="

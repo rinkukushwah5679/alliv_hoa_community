@@ -106,7 +106,7 @@ class Association < ApplicationRecord
   end
 
   def create_user_on_unityfi
-    unityfi_service = Unityfi.new
+    unityfi_service = UnityfiService.new
     unityfi_service.create_location_user(self)
   end
 end

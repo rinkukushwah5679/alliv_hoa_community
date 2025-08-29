@@ -2,7 +2,7 @@ require "uri"
 require "json"
 require "net/http"
 
-class Unityfi
+class UnityfiService
 
 	def generate_token
 
