@@ -3,8 +3,8 @@ class Association < ApplicationRecord
   # attr_accessor :special_assesments
   default_scope { order(created_at: :desc) }
   validates :name, presence: true
-  validates :telephone_no, presence: true
-  validates :email, presence: true
+  # validates :telephone_no, presence: true
+  # validates :email, presence: true
   has_one :association_address, dependent: :destroy
   has_many :bank_accounts, as: :bank_accountable, dependent: :destroy
   has_many :association_dues, dependent: :destroy
