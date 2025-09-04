@@ -164,6 +164,7 @@ module V1
 					bank.plaid_type = ba["type"]
 					bank.geteway_account_res = accounts_response
 					bank.is_primary = true unless is_primary
+					bank.account_type = params[:account_type] if params[:account_type].present?
 					bank.save
 					# bank.update_columns(is_verified: true)
 					# create_stripe_bank_account_with_plaid(accountable_object, bank)
