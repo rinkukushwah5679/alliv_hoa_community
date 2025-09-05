@@ -97,13 +97,19 @@ module V1
 					auto.is_active = false
 					message = "Autopay disabled successfully"
 				else
+					return render json: {status: 422, success: false, data: nil, message: "Please choose bank account"} unless params[:payment_method_id].present?
 					# Either new record or inactive, so enable it
 					auto.is_active = true
 					auto.amount = params[:amount] if params[:amount].present?
-					auto.payment_method_id = params[:payment_method_id] if params[:payment_method_id].present?
+					auto.payment_method_id = params[:payment_method_id] if params[:payment_method_id].present? #this is bank id
 					# auto.bank_account_id = params[:bank_account_id] if params[:bank_account_id].present? #Removed thid column bank_account_id
-					auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
-					auto.total_amount = params[:total_amount] if params[:total_amount].present?
+					# auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
+					auto.total_dues = params[:total_dues]
+					auto.convenience_fee = params[:ach_convenience_fee]
+					auto.total_amount = params[:total_amount]
+					auto.unityfi_ach_monthly_fee = params[:unityfi_ach_monthly_fee]
+					auto.association_due_id = params[:association_due_id]
+					auto.due_date = params[:due_date]
 					message = "Autopay enabled successfully"
 				end
 
