@@ -11,7 +11,7 @@ class Unit < ApplicationRecord
 	accepts_nested_attributes_for :unit_files, allow_destroy: true
 	has_one_attached :notice_document
 	# before_create :user_unit_limit_not_exceeded
-	before_create :set_unit_number
+	# before_create :set_unit_number
   after_save :check_surface_area_change
   # before_commit :update_allocation
   after_destroy :recalculate_allocation_after_destroy
