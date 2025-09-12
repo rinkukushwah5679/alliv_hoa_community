@@ -133,8 +133,10 @@ module V1
 
 				if accountable_object.class.name == "Association"
 					is_primary =  accountable_object.primary_bank_account
+					is_user = false
 				else
 					is_primary = accountable_object.primary_bank_account || accountable_object.primary_card
+					is_user = true
 				end
 
 				plaid_bank_accounts = accounts_response["accounts"]
@@ -165,6 +167,7 @@ module V1
 					bank.geteway_account_res = accounts_response
 					bank.is_primary = true unless is_primary
 					bank.account_type = params[:account_type] if params[:account_type].present?
+					bank.user_current_role = accountable_object.current_role if is_user && accountable_object.current_role.present?
 					bank.save
 					# bank.update_columns(is_verified: true)
 					# create_stripe_bank_account_with_plaid(accountable_object, bank)
