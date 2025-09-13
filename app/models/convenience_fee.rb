@@ -1,0 +1,2 @@
+class ConvenienceFee < ApplicationRecord
+end

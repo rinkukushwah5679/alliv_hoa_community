@@ -142,11 +142,12 @@ module V1
 				plaid_bank_accounts = accounts_response["accounts"]
 				ach = accounts_response["numbers"]["ach"]
 				plaid_bank_accounts.each do |ba|
+					bank_account_type = %w[checking savings].include?(ba["subtype"]) ? ba["subtype"] : "savings"
 					account_id = ba["account_id"]
 					acc_routing_number = ach.select { |aa| aa["account_id"] == account_id}.first
 					bank = accountable_object.reload.bank_accounts.new
 					bank.name = accounts_response["item"]["institution_name"] rescue "Test"# "Bank of America"
-					bank.bank_account_type = ba["subtype"]
+					bank.bank_account_type = bank_account_type
 					bank.account_number = acc_routing_number["account"]
 					bank.routing_number = acc_routing_number["routing"]
 					bank.recipient_name = current_user&.full_name
