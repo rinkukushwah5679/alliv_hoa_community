@@ -224,6 +224,156 @@ class Unit < ApplicationRecord
     results
   end
 
+  def calculate_upcoming_due_entries(association_due, ownership_account, ach_monthly_fee)
+    results = []
+    return results unless association_due.frequency == "Monthly"
+
+    today = Date.today
+    due_day = association_due.start_date.day
+
+    current_due_date = Date.new(today.year, today.month, [due_day, Time.days_in_month(today.month, today.year)].min)
+    next_month = today.next_month
+    next_due_date = Date.new(next_month.year, next_month.month, [due_day, Time.days_in_month(next_month.month, next_month.year)].min)
+
+    due_date = current_due_date >= today ? current_due_date : next_due_date
+    return results if ownership_account.date_of_purchase >= due_date
+
+    payment_month_str = due_date.strftime("%m-%Y")
+    already_paid = Payment.exists?(
+      user_id: ownership_account.unit_owner_id,
+      unit_id: self.id,
+      payment_month: payment_month_str,
+      status: ["success", "credit_awaiting", "credit_success", "payment_awaiting", "payment_failed"],
+      association_due_id: association_due.id
+    )
+    return results if already_paid
+
+    amount_due = self.amount_due(association_due)
+    total_amount = amount_due
+    total_dues = total_amount
+    convenience_fee_only_mothly_due = calculate_convenience_fee(total_amount)
+    total_amount += convenience_fee_only_mothly_due + ach_monthly_fee
+    convenience_fee = ach_monthly_fee + convenience_fee_only_mothly_due
+    # unit_autopay = UnitAutopay.find_by(unit_id: self.id, user_id: current_user.id)
+    # autopay_status = unit_autopay.present? ? unit_autopay.is_active : false
+    days_left = (due_date - today).to_i
+
+    results << {
+      unit_id: self.id,
+      unit: self.unit_number,
+      unit_name: self&.name,
+      type: "upcoming_monthly_due",
+      amount: amount_due,
+      total_dues: total_dues,
+      ach_convenience_fee: convenience_fee,
+      unityfi_ach_monthly_fee: ach_monthly_fee,
+      total_amount: total_amount,
+      due_date: due_date,
+      # autopay: autopay_status,
+      days_left: days_left,
+      association_due_id: association_due.id
+    }
+
+    results
+  end
+
+  def calculate_upcoming_special_assesment_monthly(association_due, ownership_account)
+    results = []
+    return results if association_due.start_date.blank? || association_due.end_date.blank?
+
+    today = Date.today
+    due_day = association_due.start_date.day
+    current_month = today.beginning_of_month
+
+    (association_due.start_date.beginning_of_month..[association_due.end_date.beginning_of_month, current_month + 2.months].min)
+      .select { |d| d.day == 1 }
+      .each do |month|
+        due_date = Date.new(month.year, month.month, [due_day, Time.days_in_month(month.month, month.year)].min)
+        next if due_date < today
+        next if ownership_account.date_of_purchase >= due_date
+
+        payment_month_str = due_date.strftime("%m-%Y")
+        already_paid = Payment.exists?(
+          user_id: ownership_account.unit_owner_id,
+          unit_id: self.id,
+          payment_month: payment_month_str,
+          status: ["success", "credit_awaiting", "credit_success", "payment_awaiting", "payment_failed"],
+          association_due_id: association_due.id
+        )
+        next if already_paid
+
+        amount_due = self.amount_due(association_due)
+        total_amount = amount_due
+        total_dues = total_amount
+        convenience_fee = calculate_convenience_fee(total_amount)
+        total_amount += convenience_fee
+        days_left = (due_date - today).to_i
+
+        results << {
+          unit_id: self.id,
+          unit: self.unit_number,
+          unit_name: self&.name,
+          type: "Upcoming Special Assessment (Monthly)",
+          amount: amount_due,
+          total_dues: total_dues,
+          unityfi_ach_monthly_fee: 0,
+          ach_convenience_fee: convenience_fee,
+          total_amount: total_amount,
+          due_date: due_date,
+          autopay: false,
+          days_left: days_left,
+          association_due_id: association_due.id
+        }
+      end
+
+    results
+  end
+
+  def calculate_upcoming_special_assesment_onetime(association_due, ownership_account)
+    results = []
+    return results if association_due.start_date.blank?
+
+    due_date = association_due.start_date
+    today = Date.today
+
+    return results if due_date < today
+    return results if ownership_account.date_of_purchase >= due_date
+
+    already_paid = Payment.exists?(
+      user_id: ownership_account.unit_owner_id,
+      unit_id: self.id,
+      payment_month: due_date.strftime("%m-%Y"),
+      status: ["success", "credit_awaiting", "credit_success", "payment_awaiting", "payment_failed"],
+      association_due_id: association_due.id
+    )
+    return results if already_paid
+
+    amount_due = self.amount_due(association_due)
+    total_amount = amount_due
+    total_dues = total_amount
+    convenience_fee = calculate_convenience_fee(total_amount)
+    total_amount += convenience_fee
+    days_left = (due_date - today).to_i
+
+    results << {
+      unit_id: self.id,
+      unit: self.unit_number,
+      unit_name: self&.name,
+      type: "Upcoming Special Assessment (One-Time)",
+      amount: amount_due,
+      total_dues: total_dues,
+      unityfi_ach_monthly_fee: 0,
+      ach_convenience_fee: convenience_fee,
+      total_amount: total_amount,
+      due_date: due_date,
+      autopay: false,
+      days_left: days_left,
+      association_due_id: association_due.id
+    }
+
+    results
+  end
+
   private
 
   def check_surface_area_change

@@ -1,5 +1,5 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :status, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
+	attributes :id, :name, :dues_or_balance, :status, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
 
 	attribute :association_name do |object|
 		object&.custom_association&.name rescue nil
@@ -74,6 +74,36 @@ class UnitDetailsSerializer < BaseSerializer
 
 	attribute :description do |object|
 		object.description
+	end
+
+	attribute :dues_or_balance do |object|
+		results = []
+		association = object.custom_association
+
+		association_units_count = association.units.count
+		convenience_ach_fee_per_unit = association_units_count.positive? ? (Setting.unityfi_ach_monthly_fee.to_f / association_units_count) : 0
+
+		ownership_account = object.ownership_account
+		next if ownership_account.blank?
+
+		all_dues = association.association_dues
+		all_dues.each do |association_due|
+			due_type = association_due.due_type
+			frequency = association_due.frequency
+			next if association_due.blank?
+
+			case due_type
+			when "dues"
+				results += object.calculate_upcoming_due_entries(association_due, ownership_account, convenience_ach_fee_per_unit.round(2))
+			when "special_assesment"
+				if frequency == "Monthly"
+					results += object.calculate_upcoming_special_assesment_monthly(association_due, ownership_account)
+				elsif frequency == "OneTime"
+					results += object.calculate_upcoming_special_assesment_onetime(association_due, ownership_account)
+				end
+			end
+		end
+		results.sum { |r| r[:total_amount].to_f }
 	end
 
 	class << self
