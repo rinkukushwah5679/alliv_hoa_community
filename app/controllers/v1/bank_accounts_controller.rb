@@ -241,6 +241,42 @@ module V1
 			end
 		end
 
+		def fetch_all_balance_from_plaid
+			begin
+				if params[:association_id].present?
+					@association = Association.find_by_id(params[:association_id]) if params[:association_id]
+					return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
+					bank_accounts = BankAccount.for_specific_association(@association.id)
+				else
+					association_ids = current_user.associations.pluck(:id)
+					bank_accounts = BankAccount.for_association_ids(association_ids)
+				end
+
+				bank_accounts.where.not(access_token: nil, geteway_account_id: nil).each_with_index do |bank, bindex|
+					bank_account_details = HTTParty.post("#{ENV['PLAID_URL']}/accounts/balance/get", {
+						headers: { 'Content-Type' => 'application/json' },
+						body: {
+							client_id: ENV["PLAID_CLIENT_ID"],
+							secret: ENV["PLAID_SECRET"],
+							access_token: bank&.access_token.to_s,
+							options: {
+								account_ids: [bank&.geteway_account_id.to_s]
+							}
+						}.to_json
+					})
+					puts "=================== #{bindex+1}. #{bank_account_details.code} ================="
+					if bank_account_details.code == 200 || bank_account_details.code == "200"
+						plaid_bank_accounts = bank_account_details["accounts"][0]["balances"]
+						bank.update(available_balance: plaid_bank_accounts["available"].to_f, current_balance: plaid_bank_accounts["current"].to_f)
+					end
+				end
+
+				render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly fetch balance"}, status: :ok
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
+		end
+
 		def create_funding_account_unityfi(location_user, bank)
 			begin
 				unityfi_service = UnityfiService.new
