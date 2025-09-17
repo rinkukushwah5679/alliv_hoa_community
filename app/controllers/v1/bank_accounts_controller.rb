@@ -270,8 +270,8 @@ module V1
 						bank.update(available_balance: plaid_bank_accounts["available"].to_f, current_balance: plaid_bank_accounts["current"].to_f)
 					end
 				end
-
-				render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly fetch balance"}, status: :ok
+				totle_balance = bank_accounts.present? ? bank_accounts.sum(:available_balance).to_f : 0.0
+				render json: {status: 200, success: true, totle_balance: totle_balance, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly fetch balance"}, status: :ok
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }
 			end
