@@ -5,6 +5,10 @@ class WalkthroughDetailsSerializer < BaseSerializer
 		ob&.custom_association&.name rescue nil
 	end
 
+	attribute :address do |ob|
+		ob&.custom_association&.association_address&.full_address rescue nil
+	end
+
 	attributes :property_manager_name do |ob|
 		manager = ob.user
 		# ob&.user&.full_name rescue nil
