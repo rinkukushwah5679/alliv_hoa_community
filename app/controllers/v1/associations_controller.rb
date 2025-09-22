@@ -4,15 +4,40 @@ module V1
 		before_action :set_association, only: [:show, :update, :destroy] #create_stripe_account
 		def index
 			begin
+				# associations = Association
+				#   .left_joins(units: :ownership_account)
+				#   .left_joins(:community_association_managers)
+				#   .where(
+				#     "ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id =  :user_id",
+				#     user_id: current_user.id
+				#   )
+				#   .yield_self { |query|
+				#     # params[:search].present? ? query.where("associations.name ILIKE ?", "%#{params[:search]}%") : query
+				#     query = query.where("associations.name ILIKE ?", "%#{params[:search]}%") if params[:search].present?
+				#     query = query.where(status: params[:status]) if params[:status].present?
+				#     query
+				#   }
+				#   .distinct
 				associations = Association
 				  .left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
-				  .where(
-				    "ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id =  :user_id",
-				    user_id: current_user.id
-				  )
 				  .yield_self { |query|
-				    # params[:search].present? ? query.where("associations.name ILIKE ?", "%#{params[:search]}%") : query
+				    case current_user.current_role
+				    when "Resident"
+				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+				    when "AssociationManager"
+				      query = query.where("community_association_managers.user_id = ?", current_user.id)
+				    when "BoardMember", "SystemAdmin"
+				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    else
+				      # If there is any other role, then by default check all the roles.
+				      query = query.where(
+				        "ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id = :user_id",
+				        user_id: current_user.id
+				      )
+				    end
+
+				    # filters
 				    query = query.where("associations.name ILIKE ?", "%#{params[:search]}%") if params[:search].present?
 				    query = query.where(status: params[:status]) if params[:status].present?
 				    query
