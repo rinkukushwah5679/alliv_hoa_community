@@ -26,6 +26,10 @@ class AssociationsSerializer < BaseSerializer
     # object.special_assesments rescue []
   end
 
+  attribute :expense_thresholds do |object|
+    ExpenseThresholdSerializer.new(object.expense_thresholds).serializable_hash[:data] rescue []
+  end
+
   attribute :tax_identification do |object|
   	object.tax_information
   end
