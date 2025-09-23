@@ -32,6 +32,7 @@ Rails.application.routes.draw do
         get :unit_history, on: :member
         post :autopay_enabled, on: :member
       end
+      resources :expense_thresholds, :only => [:index, :show, :update]
     end
     get '/download_file', to: 'downloads#download_file'
   end
