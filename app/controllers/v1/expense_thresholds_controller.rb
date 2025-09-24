@@ -8,7 +8,7 @@ module V1
 				thresholds = fetch_threshold
 				page = params[:page] || 1
 				per_page = params[:per_page] || 10
-				thresholds = thresholds.order(created_at: :desc).paginate(page: page, per_page: per_page)
+				thresholds = thresholds.select("expense_thresholds.*, a.id AS a_id, a.name AS a_name").joins("INNER JOIN associations as a on a.id = expense_thresholds.association_id").order(created_at: :desc).paginate(page: page, per_page: per_page)
 				total_pages = thresholds.total_pages
 				return render json: {status: 200, success: true, data: ExpenseThresholdSerializer.new(thresholds).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: thresholds.count}, message: "thresholds list"}
 			rescue StandardError => e
@@ -47,7 +47,8 @@ module V1
 		def set_threshold
 			# return if set_association_from_params! == :rendered
 			# thresholds = fetch_threshold
-			@threshold = ExpenseThreshold.find_by(id: params[:id])
+			@threshold = ExpenseThreshold.select("expense_thresholds.*, a.id AS a_id, a.name AS a_name").joins("INNER JOIN associations as a on a.id = expense_thresholds.association_id").find_by(id: params[:id])
+			# @threshold = ExpenseThreshold.find_by(id: params[:id])
 			return render json: {status: 404, success: false, data: nil, message: "Expense threshold not found"} unless @threshold.present?
 		end
 
