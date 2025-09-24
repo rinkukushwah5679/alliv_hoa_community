@@ -112,6 +112,7 @@ class Association < ApplicationRecord
   end
 
   def create_user_on_unityfi
+    return if test_environment?
     unityfi_service = UnityfiService.new
     unityfi_service.create_location_user(self)
   end
