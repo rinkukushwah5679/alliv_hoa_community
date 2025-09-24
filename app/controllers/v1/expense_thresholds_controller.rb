@@ -16,11 +16,38 @@ module V1
 			end
 		end
 
+		def show
+			render json: {status: 200, success: true, data: ExpenseThresholdSerializer.new(@threshold).serializable_hash[:data], message: "Details"}
+		end
+
+		def update
+			begin
+				if @threshold.update(threshold_params)
+					render json: {status: 200, success: true, data: ExpenseThresholdSerializer.new(@threshold).serializable_hash[:data], message: "Updated successfully."}
+				else
+					render json: {status: 422, success: false, data: nil, message: @threshold.errors.full_messages.join(", ")}
+
+				end
+			rescue StandardError => e
+				render json: {status: 500, success: false, data: nil, message: e.message}
+			end
+		end
+
+		def destroy
+			@threshold.destroy
+			render json: {status: 200, success: true, data: nil, message: "Thresholds successfully destroyed."}
+		end
+
 		private
+
+		def threshold_params
+			params.require(:threshold).permit(:status)
+		end
+
 		def set_threshold
-			return if set_association_from_params! == :rendered
-			thresholds = fetch_threshold
-			@threshold = thresholds.find_by(id: params[:id])
+			# return if set_association_from_params! == :rendered
+			# thresholds = fetch_threshold
+			@threshold = ExpenseThreshold.find_by(id: params[:id])
 			return render json: {status: 404, success: false, data: nil, message: "Expense threshold not found"} unless @threshold.present?
 		end
 
@@ -30,17 +57,17 @@ module V1
 			@association = Association.find_by(id: params[:association_id])
 
 			unless @association
-				render json: {status: 404, success: false, data: nil, message: "Association not found"}, status: :not_found
+				render json: {status: 404, success: false, data: nil, message: "Association not found"}
 				return :rendered
 			end
 		end
 
 		def fetch_threshold
-			if @association .present?
+			if @association.present?
 				@association.expense_thresholds
 			else
-			associations = current_user.associations
-			ExpenseThreshold.where(association_id: associations.pluck(:id))
+				associations = current_user.associations
+				ExpenseThreshold.where(association_id: current_user.associations.pluck(:id))
 			end
 		end
 	end
