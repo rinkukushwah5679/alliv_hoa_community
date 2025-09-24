@@ -64,12 +64,29 @@ module V1
 		end
 
 		def fetch_threshold
-			if @association.present?
+			thresholds = if @association.present?
 				@association.expense_thresholds
 			else
 				associations = current_user.associations
-				ExpenseThreshold.where(association_id: current_user.associations.pluck(:id))
+				ExpenseThreshold.where(association_id: associations.select(:id))
 			end
+			thresholds = thresholds.joins("INNER JOIN associations ON associations.id = expense_thresholds.association_id")
+
+			if params[:search].present?
+				search_term = "%#{params[:search]}%"
+
+				# 1st try: filter by association name
+				filtered = thresholds.where("associations.name ILIKE ?", search_term)
+
+				# if no results → fallback to approval_type
+				thresholds = if filtered.exists?
+					filtered
+				else
+					thresholds.where("expense_thresholds.approval_type ILIKE ?", search_term)
+				end
+			end
+
+			thresholds
 		end
 	end
 end
