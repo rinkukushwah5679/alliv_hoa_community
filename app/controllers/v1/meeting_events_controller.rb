@@ -5,12 +5,12 @@ module V1
 		def index
 			begin
 				return if set_association_from_params! == :rendered
-				thresholds = fetch_meetings
+				events = fetch_meetings
 				page = params[:page] || 1
 				per_page = params[:per_page] || 10
-				thresholds = thresholds.select("expense_thresholds.*, a.id AS a_id, a.name AS a_name").joins("INNER JOIN associations as a on a.id = expense_thresholds.association_id").order(created_at: :desc).paginate(page: page, per_page: per_page)
-				total_pages = thresholds.total_pages
-				return render json: {status: 200, success: true, data: MeetingEventsSerializer.new(thresholds).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: thresholds.count}, message: "Events list"}
+				events = events.order(created_at: :desc).paginate(page: page, per_page: per_page)
+				total_pages = events.total_pages
+				return render json: {status: 200, success: true, data: MeetingEventsSerializer.new(events).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: events.count}, message: "Events list"}
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message}
 			end
