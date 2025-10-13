@@ -33,6 +33,8 @@ Rails.application.routes.draw do
         post :autopay_enabled, on: :member
       end
       resources :expense_thresholds, :only => [:index, :show, :update, :destroy]
+      resources :meeting_events, :only => [:index, :show, :create, :update, :destroy]
+
     end
     get '/download_file', to: 'downloads#download_file'
   end
