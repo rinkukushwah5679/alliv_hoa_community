@@ -125,9 +125,13 @@ module V1
 			end
 
 			# meetings
-			current_time = Time.zone.now
-			meetings = meetings.where("meeting_date > ? OR (meeting_date = ? AND start_time >= ?)",
+			if params[:dashboard].present?
+				current_time = Time.zone.now
+				meetings = meetings.where("meeting_date > ? OR (meeting_date = ? AND start_time >= ?)",
                                    current_time.to_date, current_time.to_date, current_time)
+			else
+				meetings = meetings
+			end
 			meetings
 		end
 	end
