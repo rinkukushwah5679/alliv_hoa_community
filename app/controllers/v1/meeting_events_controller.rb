@@ -10,7 +10,7 @@ module V1
 				per_page = params[:per_page] || 10
 				events = events.order(created_at: :desc).paginate(page: page, per_page: per_page)
 				total_pages = events.total_pages
-				return render json: {status: 200, success: true, data: MeetingEventsSerializer.new(events).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: events.count}, message: "Events list"}
+				return render json: {status: 200, success: true, data: MeetingEventsSerializer.new(events).serializable_hash[:data], total_events: events.count, pagination_data: { total_pages: total_pages, total_records: events.count}, message: "Events list"}
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message}
 			end
@@ -78,8 +78,35 @@ module V1
 			meetings = if @association.present?
 				@association.meeting_events
 			else
-				associations = current_user.associations
-				MeetingEvent.where(association_id: associations.select(:id))
+				associations = Association
+				  .left_joins(units: :ownership_account)
+				  .left_joins(:community_association_managers)
+				  .yield_self { |query|
+				    case current_user.current_role
+				    when "Resident"
+				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+				    when "AssociationManager"
+				      query = query.where("community_association_managers.user_id = ?", current_user.id)
+				    when "BoardMember", "SystemAdmin"
+				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    else
+				      # If there is any other role, then by default check all the roles.
+				      query = query.where(
+				        "ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id = :user_id",
+				        user_id: current_user.id
+				      )
+				    end
+				    query
+				  }
+				  .distinct
+				# associations = current_user.associations
+				association_ids = associations.map(&:id)
+				# MeetingEvent.where(association_id: associations.select(:id))
+				if current_user.current_role == "Resident"
+					MeetingEvent.where(association_id: associations.map(&:id), participants: "All Members")
+				else
+					MeetingEvent.where(association_id: associations.map(&:id))
+				end
 			end
 			meetings = meetings.joins("INNER JOIN associations ON associations.id = meeting_events.association_id")
 
@@ -97,6 +124,10 @@ module V1
 				end
 			end
 
+			# meetings
+			current_time = Time.zone.now
+			meetings = meetings.where("meeting_date > ? OR (meeting_date = ? AND start_time >= ?)",
+                                   current_time.to_date, current_time.to_date, current_time)
 			meetings
 		end
 	end
