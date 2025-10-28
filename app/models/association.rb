@@ -27,6 +27,7 @@ class Association < ApplicationRecord
   accepts_nested_attributes_for :expense_thresholds, allow_destroy: true
   has_many :meeting_events, dependent: :destroy
   has_many :announcements, dependent: :destroy
+  has_many :violations, dependent: :destroy
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
