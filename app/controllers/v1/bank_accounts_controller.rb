@@ -187,6 +187,7 @@ module V1
 					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
 				end
 			rescue StandardError => e
+				Rails.logger.info "==========Bank with plaid error #{e.message}"
 				render json: {status: 500, success: false, data: nil, message: e.message }
 			end
 		end
