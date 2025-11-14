@@ -34,7 +34,7 @@ Rails.application.routes.draw do
       end
       resources :expense_thresholds, :only => [:index, :show, :update, :destroy]
       resources :meeting_events, :only => [:index, :show, :create, :update, :destroy]
-
+      resources :amenities
     end
     get '/download_file', to: 'downloads#download_file'
   end
