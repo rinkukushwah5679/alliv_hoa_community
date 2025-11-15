@@ -122,6 +122,11 @@ module V1
 					amenity_reservations.where("amenities.amenity_name ILIKE :search OR amenity_reservations.serial_number_sku ILIKE :search",search: search_term)
 				end
 			end
+			if params[:dashboard].present?
+				current_time = Time.zone.now
+				amenity_reservations = amenity_reservations.where("reservation_date > ? OR (reservation_date = ? AND start_time >= ?)",
+                                   current_time.to_date, current_time.to_date, current_time)
+			end
 			amenity_reservations
 		end
 	end
