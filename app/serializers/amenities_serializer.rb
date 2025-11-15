@@ -10,9 +10,6 @@ class AmenitiesSerializer < BaseSerializer
   end
 
   attribute :quantity do |object|
-    #impliment this featurs
-    # there is AmenityReservations.count of this Amenitie
-    # object.amenity_reservations.count rescue 0
-    0
+    object.amenity_reservations.count rescue 0
   end
 end

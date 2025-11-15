@@ -4,10 +4,11 @@ class MeetingEvent < ApplicationRecord
 	enum :participants, {"Board Only" => "Board Only", "All Members" => "All Members"}
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
   belongs_to :user, optional: true
+  validates :meeting_date, :start_time, :end_time, presence: true
   validate :user_must_exist
 	before_create :set_auto_generate_id
   has_many_attached :event_attachments
-	validate :meeting_date_cannot_be_in_past
+	# validate :meeting_date_cannot_be_in_past
 	validate :start_time_should_be_before_end_time
 
 	def set_auto_generate_id

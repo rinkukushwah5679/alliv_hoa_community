@@ -18,7 +18,7 @@ class User < ApplicationRecord
   has_many :bank_accounts, as: :bank_accountable, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
   has_many :payment_methods, dependent: :destroy
-
+  has_many :amenity_reservations, dependent: :destroy
   def is_subscription_active
     subscription = subscriptions.where(status: "active").last
     return subscription.present? && subscription.end_date.present? && subscription.end_date >= Time.current

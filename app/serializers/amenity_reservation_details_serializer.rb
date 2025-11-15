@@ -1,5 +1,5 @@
-class AmenitiesDetailsSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :amenity_name, :description, :serial_number_sku, :location, :participants
+class AmenityReservationDetailsSerializer < BaseSerializer
+  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :amenity_id, :amenity_name, :description, :serial_number_sku, :location, :reservation_date
 
   attribute :created_date do |object|
     object.created_at.strftime("%m/%d/%Y")
@@ -9,10 +9,22 @@ class AmenitiesDetailsSerializer < BaseSerializer
     object.a_name rescue nil
   end
 
+  attribute :amenity_name do |object|
+    object.am_amenity_name rescue nil
+  end
+
+  attribute :start_time do |obj|
+    obj.start_time.strftime("%I:%M%P") rescue nil
+  end
+
+  attribute :end_time do |obj|
+    obj.end_time.strftime("%I:%M%P") rescue nil
+  end
+
   attribute :amenity_attachments do |object|
     data = []
-    if object.amenity_attachments.present?
-      data = attachments(object.amenity_attachments)
+    if object.amenity.amenity_attachments.present?
+      data = attachments(object.amenity.amenity_attachments)
     end
     data
   end
