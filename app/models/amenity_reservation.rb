@@ -1,6 +1,7 @@
 class AmenityReservation < ApplicationRecord
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	belongs_to :amenity
+	validates :reservation_date, presence: true
 	validate :start_time_should_be_before_end_time
 	before_create :set_auto_generate_id
 	def set_auto_generate_id
