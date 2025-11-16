@@ -66,7 +66,7 @@ module V1
 		end
 
 		def set_amenity_reservation
-			@amenity_reservation = current_user.amenity_reservations.select("amenity_reservations.*, a.id AS a_id, a.name AS a_name, am.id AS am_id, am.amenity_name AS am_amenity_name").joins("INNER JOIN associations as a on a.id = amenity_reservations.association_id").joins("INNER JOIN amenities as am on am.id = amenity_reservations.amenity_id").includes(amenity: [ amenity_attachments_attachments: :blob ]).find_by(id: params[:id])
+			@amenity_reservation = AmenityReservation.select("amenity_reservations.*, a.id AS a_id, a.name AS a_name, am.id AS am_id, am.amenity_name AS am_amenity_name").joins("INNER JOIN associations as a on a.id = amenity_reservations.association_id").joins("INNER JOIN amenities as am on am.id = amenity_reservations.amenity_id").includes(amenity: [ amenity_attachments_attachments: :blob ]).find_by(id: params[:id])
 			return render json: {status: 404, success: false, data: nil, message: "Amenity reservation not found"} unless @amenity_reservation.present?
 		end
 
@@ -83,7 +83,11 @@ module V1
 
 		def fetch_amenity_reservations
 			amenity_reservations = if @association.present?
-				AmenityReservation.where(user_id: current_user.id, association_id: @association.id)
+				if current_user.current_role == "Resident" || current_user.current_role == "BoardMember"
+					AmenityReservation.where(user_id: current_user.id, association_id: @association.id)
+				else
+					AmenityReservation.where(association_id: @association.id)
+				end
 			else
 				associations = Association
 				  .left_joins(units: :ownership_account)
@@ -91,15 +95,21 @@ module V1
 				    case current_user.current_role
 				    when "Resident"
 				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+				    when "AssociationManager"
+				      query = query.where("community_association_managers.user_id = ?", current_user.id)
 				    else
-				    	# For "BoardMember"
+							# For "BoardMember" and "SystemAdmin"
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
 				    end
 				    query
 				  }
 				  .distinct
 				association_ids = associations.map(&:id)
-		    AmenityReservation.where(association_id: associations.map(&:id), user_id: current_user.id)
+				if current_user.current_role == "Resident" || current_user.current_role == "BoardMember"
+					AmenityReservation.where(association_id: associations.map(&:id), user_id: current_user.id)
+		    else
+					AmenityReservation.where(association_id: associations.map(&:id))
+		    end
 		    # AmenityReservation.all
 			end
 			# Always join associations
