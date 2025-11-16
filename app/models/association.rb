@@ -29,6 +29,7 @@ class Association < ApplicationRecord
   has_many :announcements, dependent: :destroy
   has_many :amenities, dependent: :destroy
   has_many :violations, dependent: :destroy
+  has_many :expense_approvals, dependent: :destroy
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
