@@ -17,6 +17,10 @@ class AssociationsSerializer < BaseSerializer
     object.association_due
   end
 
+  attribute :management_fee do |object|
+    ManagementFeeSerializer.new(object.management_fees).serializable_hash[:data] rescue []
+  end
+
   attribute :late_payment_fee do |object|
   	object.association_late_payment_fee
   end

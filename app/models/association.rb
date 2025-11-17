@@ -30,7 +30,7 @@ class Association < ApplicationRecord
   has_many :amenities, dependent: :destroy
   has_many :violations, dependent: :destroy
   has_many :expense_approvals, dependent: :destroy
-  validate :validate_units_limit
+  # validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
   after_create :create_stripe_account_id, :create_user_on_unityfi
@@ -91,6 +91,10 @@ class Association < ApplicationRecord
 
   def special_assesments
     association_dues.where(due_type: "special_assesment")
+  end
+
+  def management_fees
+    association_dues.where(due_type: "management_fee")
   end
 
   def primary_bank_account
