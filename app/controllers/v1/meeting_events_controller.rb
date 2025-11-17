@@ -55,7 +55,7 @@ module V1
 		private
 
 		def events_params
-			params.require(:events).permit(:association_id, :title, :description, :meeting_type, :user_id, :unit_number, :meeting_date, :start_time, :end_time, :location, :address, :latitude, :longitude, :participants, event_attachments: [])
+			params.require(:events).permit(:association_id, :title, :description, :meeting_type, :user_id, :unit_number, :meeting_date, :start_time, :end_time, :location, :address, :latitude, :longitude, :meeting_link, :participants, event_attachments: [])
 		end
 
 		def set_events

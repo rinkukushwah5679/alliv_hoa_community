@@ -1,5 +1,5 @@
 class MeetingEventsDetailsSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :title, :description, :meeting_type, :location, :address, :participants, :host_details, :unit_number, :meeting_date, :start_time, :end_time
+  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :title, :description, :meeting_type, :meeting_link, :location, :address, :participants, :host_details, :unit_number, :meeting_date, :start_time, :end_time
 
   attribute :created_date do |object|
     object.created_at.strftime("%m/%d/%Y")

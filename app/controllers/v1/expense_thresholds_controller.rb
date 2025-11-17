@@ -67,8 +67,22 @@ module V1
 			thresholds = if @association.present?
 				@association.expense_thresholds
 			else
-				associations = current_user.associations
-				ExpenseThreshold.where(association_id: associations.select(:id))
+				associations = Association
+				  .left_joins(:community_association_managers)
+				  .yield_self { |query|
+				    case current_user.current_role
+				    when "AssociationManager"
+				      query = query.where("community_association_managers.user_id = ?", current_user.id)
+				    else# "BoardMember", "SystemAdmin"
+				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    end
+				    query
+				  }
+				  .distinct
+				association_ids = associations.map(&:id)
+
+				# associations = current_user.associations
+				ExpenseThreshold.where(association_id: association_ids)
 			end
 			thresholds = thresholds.joins("INNER JOIN associations ON associations.id = expense_thresholds.association_id")
 
