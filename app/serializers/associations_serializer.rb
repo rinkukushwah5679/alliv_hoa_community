@@ -34,6 +34,10 @@ class AssociationsSerializer < BaseSerializer
     ExpenseThresholdSerializer.new(object.expense_thresholds).serializable_hash[:data] rescue []
   end
 
+  attribute :voting_rules do |object|
+    VotingRulesSerializer.new(object.voting_rules).serializable_hash[:data] rescue []
+  end
+
   attribute :tax_identification do |object|
   	object.tax_information
   end
