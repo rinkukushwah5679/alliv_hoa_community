@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       resources :meeting_events, :only => [:index, :show, :create, :update, :destroy]
       resources :amenities
       resources :amenity_reservations
+      resources :voting_rules
     end
     get '/download_file', to: 'downloads#download_file'
   end
