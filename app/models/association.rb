@@ -97,9 +97,9 @@ class Association < ApplicationRecord
     association_dues.where(due_type: "special_assesment")
   end
 
-  # def management_fees
-  #   association_dues.where(due_type: "management_fee")
-  # end
+  def expense_threshold
+    expense_thresholds.where(status: "Active").last
+  end
 
   def primary_bank_account
     bank_accounts.find_by(is_primary: true)
