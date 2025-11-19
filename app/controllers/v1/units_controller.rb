@@ -173,20 +173,40 @@ module V1
 			# if current_user.has_role?(:Resident)
 			if current_user.current_role == "Resident"
 				if @association
-					Unit.joins(:ownership_account).where(
+					units = Unit.joins(:ownership_account).where(
 						ownership_accounts: {
 							unit_owner_id: current_user.id,
 							association_id: @association.id
 						}
 					)
 				else
-					Unit.joins(:ownership_account).where(
+					units = Unit.joins(:ownership_account).where(
 						ownership_accounts: { unit_owner_id: current_user.id }
 					)
 				end
 			else
-				@association ? @association.units : current_user.admin_units
+
+				units = if @association.present?
+					@association.units
+				else
+					associations = Association
+					  .left_joins(:community_association_managers)
+					  .yield_self { |query|
+					    case current_user.current_role
+					    when "AssociationManager"
+					      query = query.where("community_association_managers.user_id = ?", current_user.id)
+					    else# "BoardMember", "SystemAdmin"
+					      query = query.where("associations.property_manager_id = ?", current_user.id)
+					    end
+					    query
+					  }
+					  .distinct
+					association_ids = associations.map(&:id)
+					Unit.where(association_id: association_ids)
+				end
+				# units = @association ? @association.units : current_user.admin_units
 			end
+			units
 		end
 
 
