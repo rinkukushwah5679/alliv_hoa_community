@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       resources :amenities
       resources :amenity_reservations
       resources :voting_rules
+      resources :vote_managements
     end
     get '/download_file', to: 'downloads#download_file'
   end

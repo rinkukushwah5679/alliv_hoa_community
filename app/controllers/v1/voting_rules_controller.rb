@@ -65,9 +65,12 @@ module V1
 				@association.voting_rules
 			else
 				associations = Association
+					.left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
 				  .yield_self { |query|
 				    case current_user.current_role
+				    when "Resident"
+				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
 				    when "AssociationManager"
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
 				    else# "BoardMember", "SystemAdmin"
@@ -77,8 +80,11 @@ module V1
 				  }
 				  .distinct
 				association_ids = associations.map(&:id)
-
-				VotingRule.where(association_id: association_ids)
+				if current_user.current_role == "Resident"
+					VotingRule.where(association_id: association_ids, participant_category: "All Members")
+				else
+					VotingRule.where(association_id: association_ids)
+				end
 			end
 			voting_rules = voting_rules.joins("INNER JOIN associations ON associations.id = voting_rules.association_id")
 

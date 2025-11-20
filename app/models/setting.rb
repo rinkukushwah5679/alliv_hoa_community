@@ -12,7 +12,7 @@ class Setting < RailsSettings::Base
   # field :omniauth_google_client_id, default: (ENV["OMNIAUTH_GOOGLE_CLIENT_ID"] || ""), type: :string, readonly: true
   # field :omniauth_google_client_secret, default: (ENV["OMNIAUTH_GOOGLE_CLIENT_SECRET"] || ""), type: :string, readonly: true
   field :unityfi_ach_monthly_fee, default: 20.0, type: :decimal
-
+  field :per_page_records, default: 50, type: :integer
   private
  
     def clear_cache
