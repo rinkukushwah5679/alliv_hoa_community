@@ -15,7 +15,8 @@ module V1
 					bank_accounts = bank_accounts.for_association_ids(association_ids)
 				end
 				totle_balance = bank_accounts.present? ? bank_accounts.sum(:available_balance).to_f : 0.0
-				bank_accounts = bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				per_page_value = Setting.per_page_records
+				bank_accounts = bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || per_page_value))
 				# bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 				total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
 				if params[:filter] == 'mine'

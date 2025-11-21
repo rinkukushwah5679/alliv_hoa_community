@@ -7,7 +7,8 @@ module V1
 				return if set_association_from_params! == :rendered
 				voting_rules = fetch_voting_rules
 				page = params[:page] || 1
-				per_page = params[:per_page] || 10
+				per_page_value = Setting.per_page_records
+				per_page = params[:per_page] || per_page_value
 				voting_rules = voting_rules.select("voting_rules.*, a.id AS a_id, a.name AS a_name").joins("INNER JOIN associations as a on a.id = voting_rules.association_id").order(created_at: :desc).paginate(page: page, per_page: per_page)
 				total_pages = voting_rules.total_pages
 				return render json: {status: 200, success: true, data: VotingRulesSerializer.new(voting_rules).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: voting_rules.count}, message: "List"}

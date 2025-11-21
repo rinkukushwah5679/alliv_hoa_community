@@ -7,7 +7,8 @@ module V1
 				return if set_association_from_params! == :rendered
 				thresholds = fetch_threshold
 				page = params[:page] || 1
-				per_page = params[:per_page] || 10
+				per_page_value = Setting.per_page_records
+				per_page = params[:per_page] || per_page_value
 				thresholds = thresholds.select("expense_thresholds.*, a.id AS a_id, a.name AS a_name").joins("INNER JOIN associations as a on a.id = expense_thresholds.association_id").order(created_at: :desc).paginate(page: page, per_page: per_page)
 				total_pages = thresholds.total_pages
 				return render json: {status: 200, success: true, data: ExpenseThresholdSerializer.new(thresholds).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: thresholds.count}, message: "thresholds list"}

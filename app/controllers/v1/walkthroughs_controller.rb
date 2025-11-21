@@ -17,8 +17,8 @@ module V1
 				if params[:start_date].present? && params[:end_date].present?
 					walkthroughs = walkthroughs.where(created_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
 				end
-
-				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				per_page_value = Setting.per_page_records
+				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || per_page_value))
 
 				if params[:export] == "true"
 					require 'csv'

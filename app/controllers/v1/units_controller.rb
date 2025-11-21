@@ -11,7 +11,8 @@ module V1
 
 				# association_id = params[:association_id]
 				page = params[:page] || 1
-				per_page = params[:per_page] || 10
+				per_page_value = Setting.per_page_records
+				per_page = params[:per_page] || per_page_value
 
 				units = units.order(created_at: :desc).paginate(page: page, per_page: per_page)
 

@@ -18,6 +18,7 @@ module V1
 				#     query
 				#   }
 				#   .distinct
+				per_page_value = Setting.per_page_records
 				associations = Association
 				  .left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
@@ -43,7 +44,7 @@ module V1
 				    query
 				  }
 				  .distinct
-				  .paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
+				  .paginate(page: (params[:page] || 1), per_page: (params[:per_page] || per_page_value))
 				# if current_user.has_role?(:Resident)
 				# 	associations = Association.joins(units: :ownership_account).where(ownership_accounts: { unit_owner_id: current_user.id }).distinct.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 				# elsif current_user.has_role?(:AssociationManager)
