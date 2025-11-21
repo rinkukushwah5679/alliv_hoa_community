@@ -6,6 +6,7 @@ class VoteManagement < ApplicationRecord
 	belongs_to :creator, class_name: "User", foreign_key: :created_by, optional: true
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	has_many_attached :vote_management_attachments
+	validates :title, :ratification_type, presence: true
 	before_create :set_auto_generate_id
 	def set_auto_generate_id
 		last_request_id = VoteManagement.unscoped.maximum(:auto_generate_id) || 1000
