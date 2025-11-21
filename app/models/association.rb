@@ -1,4 +1,5 @@
 class Association < ApplicationRecord
+  has_paper_trail :on => [:update]
   acts_as_paranoid
   # attr_accessor :special_assesments
   default_scope { order(created_at: :desc) }
