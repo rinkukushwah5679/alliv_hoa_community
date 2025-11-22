@@ -1,6 +1,6 @@
 module V1
 	class VoteManagementsController < ApplicationController
-		before_action :set_vote_management, only: [:show, :update, :destroy]
+		before_action :set_vote_management, only: [:show, :update, :destroy, :update_status]
 
 		def index
 			begin
@@ -61,15 +61,34 @@ module V1
 			@vote_management.destroy
 			render json: {status: 200, success: true, data: nil, message: "Successfully destroyed."}
 		end
+		# Only for Resident or Board Member
+		def update_status
+			begin
+				vote_approval = VoteApproval.find_or_initialize_by(user_id: current_user.id, vote_management_id: @vote_management.id)
+
+				if vote_approval.update(vote_approval_params)
+					return render json: {status: 200, success: true, data: VoteManagementDetailsSerializer.new(@vote_management).serializable_hash[:data], message: "Status updates to #{vote_approval_params[:status]}"}
+				else
+					return render json: {status: 422, success: false, data: nil, message: vote_approval.errors.full_messages.join(", ")}
+				end
+			rescue StandardError => e
+				Rails.logger.info "==========Update status for approval error #{e.message}"
+				render json: {status: 500, success: false, data: nil, message: e.message}
+			end
+		end
 
 		private
 
 		def vote_management_params
-			params.require(:vote_management).permit(:created_date, :association_id, :participant_category, :ratification_type, :title, :description, :approval_due_date, :status, vote_management_attachments: [])
+			params.require(:vote_management).permit(:created_date, :association_id, :participant_category, :ratification_type, :title, :description, :approval_due_date, vote_management_attachments: [])
 		end
 
 		def update_vote_management_params
-			params.require(:vote_management).permit(:created_date, :association_id, :participant_category, :ratification_type, :title, :description, :approval_due_date, :status)
+			params.require(:vote_management).permit(:created_date, :association_id, :participant_category, :ratification_type, :title, :description, :approval_due_date)
+		end
+
+		def vote_approval_params
+			params.require(:vote_approval).permit(:status, :association_id)
 		end
 
 		def set_vote_management

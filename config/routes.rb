@@ -37,7 +37,9 @@ Rails.application.routes.draw do
       resources :amenities
       resources :amenity_reservations
       resources :voting_rules
-      resources :vote_managements
+      resources :vote_managements do
+        put :update_status, on: :member
+      end
     end
     get '/download_file', to: 'downloads#download_file'
   end

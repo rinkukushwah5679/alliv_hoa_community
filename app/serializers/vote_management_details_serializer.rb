@@ -1,5 +1,5 @@
 class VoteManagementDetailsSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :category, :ratification_type, :title, :approval_due_date, :status, :updated_at
+  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :category, :ratification_type, :title, :approval_due_date ,:is_voting_open, :status, :updated_at
 
   attribute :created_date do |object|
     if object.created_date.present?
@@ -15,6 +15,24 @@ class VoteManagementDetailsSerializer < BaseSerializer
 
   attribute :association_name do |object|
     object.a_name rescue nil
+  end
+
+  attribute :is_voting_open do |object|
+    if object.approval_due_date.present?
+      object.approval_due_date > Date.today
+    else
+      true
+    end
+  end
+
+  attribute :voting_data do |object|
+    counts = object.vote_approvals.group(:status).count
+    approved = counts["Approved"] || 0
+    rejected = counts["Rejected"] || 0
+    total = approved + rejected
+    approved_percentage = total > 0 ? ((approved.to_f / total) * 100).round(2) : 0
+    rejected_percentage = total > 0 ? ((rejected.to_f / total) * 100).round(2) : 0
+    {total_vote: total, approved: approved, approved_percentage: approved_percentage, rejected: rejected, rejected_percentage: rejected_percentage}
   end
 
   attribute :vote_management_attachments do |object|
