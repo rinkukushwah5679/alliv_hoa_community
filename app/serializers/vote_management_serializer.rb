@@ -1,5 +1,5 @@
 class VoteManagementSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :category, :ratification_type, :title, :approval_due_date, :is_voting_open, :status
+  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :meeting_type, :category, :ratification_type, :title, :approval_due_date, :is_voting_open, :status
 
   attribute :created_date do |object|
     if object.created_date.present?

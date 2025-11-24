@@ -3,6 +3,7 @@ class VoteManagement < ApplicationRecord
 	enum :participant_category, {"Board Members" => "Board Members", "All Members" => "All Members"}
 	enum :ratification_type, {"Simple Majority" => "Simple Majority", "Two-Thirds Majority" => "Two-Thirds Majority", "Three-Fifths Majority" => "Three-Fifths Majority", "Square-Footage" => "Square-Footage"}
 	enum :status, {"Open" => "Open", "Approved" => "Approved", "Rejected" => "Rejected"}
+	enum :meeting_type, {"Annual Meeting" => "Annual Meeting", "Special Meeting" => "Special Meeting", "Board Meeting" => "Board Meeting", "Other" => "Other"}
 	belongs_to :creator, class_name: "User", foreign_key: :created_by, optional: true
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	has_many_attached :vote_management_attachments

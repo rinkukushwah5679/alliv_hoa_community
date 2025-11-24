@@ -197,7 +197,7 @@ module V1
 				unit_files_attributes:[:id, :document, :category_name, :_destroy]],
 			expense_thresholds_attributes: [:id, :amount, :status, :approval_type, :_destroy],
 			management_fee_attributes: [:id, :description, :amount, :frequency, :start_date, :end_date, :_destroy],
-			voting_rules_attributes: [:id, :participant_category, :ratification_type, :status, :_destroy]
+			voting_rules_attributes: [:id, :meeting_type, :participant_category, :ratification_type, :status, :_destroy]
 
 			)
 		end

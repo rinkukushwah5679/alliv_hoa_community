@@ -1,5 +1,5 @@
 class VotingRulesSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :ruleset_category, :ratification_type, :status, :updated_at
+  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :meeting_type, :ruleset_category, :ratification_type, :status, :updated_at
 
   attribute :created_date do |object|
     object.created_at.strftime("%m/%d/%Y")
