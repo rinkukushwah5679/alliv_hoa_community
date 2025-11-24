@@ -64,6 +64,7 @@ module V1
 		# Only for Resident or Board Member
 		def update_status
 			begin
+				return render json: {status: 422, success: false, data: nil, message: "Voting has closed"} if @vote_management.approval_due_date.present? && @vote_management.approval_due_date < Date.today
 				vote_approval = VoteApproval.find_or_initialize_by(user_id: current_user.id, vote_management_id: @vote_management.id)
 
 				if vote_approval.update(vote_approval_params)

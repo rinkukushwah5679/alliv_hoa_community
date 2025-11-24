@@ -14,11 +14,11 @@ class AmenityReservationDetailsSerializer < BaseSerializer
   end
 
   attribute :start_time do |obj|
-    obj.start_time.strftime("%I:%M%P") rescue nil
+    obj.start_time.strftime("%H:%M") rescue nil
   end
 
   attribute :end_time do |obj|
-    obj.end_time.strftime("%I:%M%P") rescue nil
+    obj.end_time.strftime("%H:%M") rescue nil
   end
 
   attribute :amenity_attachments do |object|
