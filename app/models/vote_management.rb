@@ -15,4 +15,18 @@ class VoteManagement < ApplicationRecord
 		last_request_id = VoteManagement.unscoped.maximum(:auto_generate_id) || 1000
 		self.auto_generate_id = last_request_id + 1
 	end
+
+	def voting_data
+		begin
+			counts = self.vote_approvals.group(:status).count
+	    approved = counts["Approved"] || 0
+	    rejected = counts["Rejected"] || 0
+	    total = approved + rejected
+	    approved_percentage = total > 0 ? ((approved.to_f / total) * 100).round(2) : 0
+	    rejected_percentage = total > 0 ? ((rejected.to_f / total) * 100).round(2) : 0
+	    return {total_vote: total, approved: approved, approved_percentage: approved_percentage, rejected: rejected, rejected_percentage: rejected_percentage}
+		rescue StandardError => e
+			return nil
+		end
+	end
 end

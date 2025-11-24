@@ -11,7 +11,7 @@ module V1
 				per_page = params[:per_page] || per_page_value
 				vote_managements = vote_managements.order(created_at: :desc).paginate(page: page, per_page: per_page)
 				total_pages = vote_managements.total_pages
-				return render json: {status: 200, success: true, data: VoteManagementSerializer.new(vote_managements).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: vote_managements.count}, message: "List"}
+				return render json: {status: 200, success: true, data: VoteManagementSerializer.new(vote_managements, params: {current_user_id: current_user.id}).serializable_hash[:data], pagination_data: { total_pages: total_pages, total_records: vote_managements.count}, message: "List"}
 			rescue StandardError => e
 				Rails.logger.info "==========Vote Management listing error #{e.message}"
 				render json: {status: 500, success: false, data: nil, message: e.message}
@@ -19,7 +19,7 @@ module V1
 		end
 
 		def show
-			render json: {status: 200, success: true, data: VoteManagementDetailsSerializer.new(@vote_management).serializable_hash[:data], message: "Details"}
+			render json: {status: 200, success: true, data: VoteManagementDetailsSerializer.new(@vote_management, params: {current_user_id: current_user.id}).serializable_hash[:data], message: "Details"}
 		end
 
 		def create
@@ -68,7 +68,7 @@ module V1
 				vote_approval = VoteApproval.find_or_initialize_by(user_id: current_user.id, vote_management_id: @vote_management.id)
 
 				if vote_approval.update(vote_approval_params)
-					return render json: {status: 200, success: true, data: VoteManagementDetailsSerializer.new(@vote_management).serializable_hash[:data], message: "Status updates to #{vote_approval_params[:status]}"}
+					return render json: {status: 200, success: true, data: VoteManagementDetailsSerializer.new(@vote_management, params: {current_user_id: current_user.id}).serializable_hash[:data], message: "Status updates to #{vote_approval_params[:status]}"}
 				else
 					return render json: {status: 422, success: false, data: nil, message: vote_approval.errors.full_messages.join(", ")}
 				end

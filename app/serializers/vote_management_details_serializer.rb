@@ -25,14 +25,19 @@ class VoteManagementDetailsSerializer < BaseSerializer
     end
   end
 
+  attribute :is_voted do |object, params|
+    VoteApproval.find_by(user_id: params[:current_user_id], vote_management_id: object.id).present?
+  end
+
   attribute :voting_data do |object|
-    counts = object.vote_approvals.group(:status).count
-    approved = counts["Approved"] || 0
-    rejected = counts["Rejected"] || 0
-    total = approved + rejected
-    approved_percentage = total > 0 ? ((approved.to_f / total) * 100).round(2) : 0
-    rejected_percentage = total > 0 ? ((rejected.to_f / total) * 100).round(2) : 0
-    {total_vote: total, approved: approved, approved_percentage: approved_percentage, rejected: rejected, rejected_percentage: rejected_percentage}
+    # counts = object.vote_approvals.group(:status).count
+    # approved = counts["Approved"] || 0
+    # rejected = counts["Rejected"] || 0
+    # total = approved + rejected
+    # approved_percentage = total > 0 ? ((approved.to_f / total) * 100).round(2) : 0
+    # rejected_percentage = total > 0 ? ((rejected.to_f / total) * 100).round(2) : 0
+    # {total_vote: total, approved: approved, approved_percentage: approved_percentage, rejected: rejected, rejected_percentage: rejected_percentage}
+    object.voting_data
   end
 
   attribute :vote_management_attachments do |object|
