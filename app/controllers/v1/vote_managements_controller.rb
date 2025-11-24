@@ -81,11 +81,11 @@ module V1
 		private
 
 		def vote_management_params
-			params.require(:vote_management).permit(:created_date, :association_id, :meeting_type, :participant_category, :ratification_type, :title, :description, :approval_due_date, vote_management_attachments: [])
+			params.require(:vote_management).permit(:created_date, :association_id, :meeting_type, :voting_rule_id, :participant_category, :ratification_type, :title, :description, :approval_due_date, vote_management_attachments: [])
 		end
 
 		def update_vote_management_params
-			params.require(:vote_management).permit(:created_date, :association_id, :meeting_type, :participant_category, :ratification_type, :title, :description, :approval_due_date)
+			params.require(:vote_management).permit(:created_date, :association_id, :meeting_type, :voting_rule_id, :participant_category, :ratification_type, :title, :description, :approval_due_date)
 		end
 
 		def vote_approval_params

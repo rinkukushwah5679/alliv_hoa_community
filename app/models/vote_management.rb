@@ -9,6 +9,7 @@ class VoteManagement < ApplicationRecord
 	has_many_attached :vote_management_attachments
 	has_many :vote_approvals, dependent: :destroy
 	validates :title, :ratification_type, presence: true
+	belongs_to :voting_rule
 	before_create :set_auto_generate_id
 	def set_auto_generate_id
 		last_request_id = VoteManagement.unscoped.maximum(:auto_generate_id) || 1000
