@@ -2,21 +2,23 @@ module V1
 	class WalkthroughsController < ApplicationController
 		# before_action :set_association, except: [:index]
 		before_action :set_walkthrough, only: [:show, :update, :destroy]
-
+		# The manager is not mentioned in the document.
 		def index
 			begin
-				if params[:association_id].present?
-					association = Association.find_by(id: params[:association_id])
-					return render json: {status: 404, success: false, data: nil, message: "Associdation not found"} unless association.present?
-					walkthroughs = association.walkthroughs.order("created_at DESC")
-				else
-					walkthroughs = current_user.walkthroughs.order("created_at DESC")
-				end
+				return if set_association_from_params! == :rendered
+				walkthroughs = fetch_walkthroughs
+				# if params[:association_id].present?
+				# 	association = Association.find_by(id: params[:association_id])
+				# 	return render json: {status: 404, success: false, data: nil, message: "Associdation not found"} unless association.present?
+				# 	walkthroughs = association.walkthroughs.order("created_at DESC")
+				# else
+				# 	walkthroughs = current_user.walkthroughs.order("created_at DESC")
+				# end
 
 				# Data filterd with date range
-				if params[:start_date].present? && params[:end_date].present?
-					walkthroughs = walkthroughs.where(created_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-				end
+				# if params[:start_date].present? && params[:end_date].present?
+				# 	walkthroughs = walkthroughs.where(created_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+				# end
 				per_page_value = Setting.per_page_records
 				walkthroughs = walkthroughs.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || per_page_value))
 
@@ -170,6 +172,62 @@ module V1
 		def set_walkthrough
 			@walkthrough = Walkthrough.find_by_id(params[:id]) if params[:id]
 			return render json: {status: 404, success: false, data: nil, message: "Walkthrough not found"}, :status => :not_found unless @walkthrough.present?
+		end
+
+		# Reusable association setter
+		def set_association_from_params!
+			return unless params[:association_id].present?
+			@association = Association.find_by(id: params[:association_id])
+
+			unless @association
+				render json: {status: 404, success: false, data: nil, message: "Association not found"}
+				return :rendered
+			end
+		end
+
+		def fetch_walkthroughs
+			walkthroughs = if @association.present?
+				@association.walkthroughs
+			else
+				associations = Association
+					.left_joins(units: :ownership_account)
+				  .left_joins(:community_association_managers)
+				  .yield_self { |query|
+				    case current_user.current_role
+			    	when "Resident"
+				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+				    when "AssociationManager"
+				      query = query.where("community_association_managers.user_id = ?", current_user.id)
+				    else# "BoardMember", "SystemAdmin"
+				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    end
+				    query
+				  }
+				  .distinct
+				association_ids = associations.map(&:id)
+				Walkthrough.where(association_id: association_ids)
+			end
+
+			# Data filterd with date range
+			if params[:start_date].present? && params[:end_date].present?
+				walkthroughs = walkthroughs.where(created_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+			end
+			walkthroughs = walkthroughs
+				.select("walkthroughs.*, a.id AS a_id, a.name AS a_name, c.id AS c_id, c.profile_pic_url AS c_profile_pic_url, c.first_name AS c_first_name, c.last_name AS c_last_name")
+				.joins("INNER JOIN associations as a on a.id = walkthroughs.association_id")
+				.joins("INNER JOIN associations ON associations.id = walkthroughs.association_id")
+				.joins("LEFT JOIN users as c ON c.id = walkthroughs.created_by")
+
+			if params[:search].present?
+				search_term = "%#{params[:search]}%"
+
+				# 1st try: filter by association name
+				filtered = walkthroughs.where("associations.name ILIKE ?", search_term)
+
+				walkthroughs = filtered
+			end
+
+			walkthroughs
 		end
 	end
 end
