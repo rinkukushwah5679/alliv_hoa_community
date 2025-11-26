@@ -42,7 +42,7 @@ module V1
 		private
 
 		def threshold_params
-			params.require(:threshold).permit(:status)
+			params.require(:threshold).permit(:amount, :status, :approval_type)
 		end
 
 		def set_threshold
