@@ -1,4 +1,5 @@
 class AssociationDue < ApplicationRecord
+	has_paper_trail :on => [:update]
 	enum :distribution_type, ["Equal Distribution", "Pro Rata Distribution"]
 	enum :frequency, %w(Monthly OneTime)
 	enum :due_type, {"dues" => "dues", "special_assesment" => "special_assesment"}

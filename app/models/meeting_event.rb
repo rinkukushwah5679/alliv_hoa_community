@@ -1,4 +1,5 @@
 class MeetingEvent < ApplicationRecord
+  has_paper_trail :on => [:update]
 	enum :meeting_type, {"Board Meeting" => "Board Meeting", "Annual Meeting" => "Annual Meeting", "Special Board Meeting" => "Special Board Meeting", "Special Member Meeting" => "Special Member Meeting", "General Member Meeting" => "General Member Meeting", "General Board Meeting" => "General Board Meeting", "General Meeting" => "General Meeting"}
 	enum :location, {"In-Person" => "In-Person", "Teleconference" => "Teleconference"}
 	enum :participants, {"Board Only" => "Board Only", "All Members" => "All Members"}

@@ -1,4 +1,5 @@
 class ManagementFee < ApplicationRecord
+  has_paper_trail :on => [:update]
 	enum :frequency, {"Monthly" => "Monthly", "Annually" => "Annually"}
 	validates :end_date, presence: true, if: -> { frequency == "Monthly" }
 	validate :end_date_must_be_after_start_date, if: -> {

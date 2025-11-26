@@ -1,4 +1,5 @@
 class ExpenseThreshold < ApplicationRecord
+	has_paper_trail :on => [:update]
 	enum :approval_type, {"Simple Majority" => "Simple Majority", "Two-Thirds Majority" => "Two-Thirds Majority", "Three-Fifths Majority" => "Three-Fifths Majority"}
 	enum :status, {"Active" => "Active", "Inactive" => "Inactive"}
 	validates :approval_type, :status, presence: true

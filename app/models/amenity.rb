@@ -1,4 +1,5 @@
 class Amenity < ApplicationRecord
+	has_paper_trail :on => [:update]
 	enum :participants, {"Board Only" => "Board Only", "All Members" => "All Members"}
 	validates :amenity_name, presence: true, length: { maximum: 250, message: "can't be longer than 250 characters" }
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
