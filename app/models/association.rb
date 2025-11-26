@@ -34,6 +34,7 @@ class Association < ApplicationRecord
   has_many :voting_rules, dependent: :destroy
   has_many :vote_managements, dependent: :destroy
   has_one :management_fee, dependent: :destroy
+  has_many :work_orders
   accepts_nested_attributes_for :management_fee
   accepts_nested_attributes_for :voting_rules, allow_destroy: true
   validate :validate_units_limit

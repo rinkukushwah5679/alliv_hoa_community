@@ -22,6 +22,7 @@ module V1
 				associations = Association
 				  .left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
+				  .left_joins(:work_orders)
 				  .yield_self { |query|
 				    case current_user.current_role
 				    when "Resident"
@@ -30,6 +31,9 @@ module V1
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
 				    when "BoardMember", "SystemAdmin"
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    when "Vendor"
+							# 👇 Fetch associations where this vendor has work orders
+							query = query.where("work_orders.vendor_id = ?", current_user.id)
 				    else
 				      # If there is any other role, then by default check all the roles.
 				      query = query.where(
