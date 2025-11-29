@@ -33,7 +33,8 @@ module V1
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
 				    when "Vendor"
 							# 👇 Fetch associations where this vendor has work orders
-							query = query.where("work_orders.vendor_id = ?", current_user.id)
+							# query = query.where("work_orders.vendor_id = ?", current_user.id)
+							query = query.where("associations.property_manager_id = ?", current_user.created_by)
 				    else
 				      # If there is any other role, then by default check all the roles.
 				      query = query.where(
