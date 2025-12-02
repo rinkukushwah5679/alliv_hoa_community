@@ -6,6 +6,7 @@ class Unit < ApplicationRecord
 	has_one :ownership_account, dependent: :destroy
 	has_many :unit_financials, dependent: :destroy
 	has_many :unit_files, dependent: :destroy
+  has_many :work_orders, dependent: :destroy # I think it's should be
 	accepts_nested_attributes_for :ownership_account
 	accepts_nested_attributes_for :unit_financials, allow_destroy: true
 	accepts_nested_attributes_for :unit_files, allow_destroy: true
