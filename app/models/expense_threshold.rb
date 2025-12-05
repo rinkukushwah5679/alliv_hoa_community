@@ -6,8 +6,20 @@ class ExpenseThreshold < ApplicationRecord
 	before_create :set_auto_generate_id
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id#, optional: true
 
+	after_update :make_other_thresholds_inactive, if: :saved_change_to_status?
 	def set_auto_generate_id
 		last_request_id = ExpenseThreshold.unscoped.maximum(:auto_generate_id) || 1000
 		self.auto_generate_id = last_request_id + 1
 	end
+	# callback after updating the status
+
+  private
+
+  def make_other_thresholds_inactive
+    return unless self.Active?
+
+    custom_association.expense_thresholds
+      .where.not(id: self.id)
+      .update_all(status: "Inactive")
+  end
 end
