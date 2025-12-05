@@ -24,6 +24,10 @@ class User < ApplicationRecord
     return subscription.present? && subscription.end_date.present? && subscription.end_date >= Time.current
   end
 
+  def active_subscription
+    subscriptions.where(status: "active").order(created_at: :desc).first
+  end
+
   def primary_bank_account
     bank_accounts.find_by(is_primary: true)
   end

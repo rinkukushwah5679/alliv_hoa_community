@@ -71,7 +71,7 @@ class Association < ApplicationRecord
   def validate_units_limit
     return unless units.present?
     # max_units = user&.number_units_subscribe || 0
-    subs = user.subscriptions.where(status: "active").last
+    subs = user.active_subscription
     unless subs.present?
       errors.add(:base, "You have no active subscription.")
       return
