@@ -72,6 +72,7 @@ module V1
 		def create
 			begin
 			  association = current_user.associations.new(association_params)
+			  association.company_id = current_user.company_id if current_user.company_id.present?
 			  if association.save
 					bank_accounts = create_stripe_bank_account(association)
 			  	# create_stripe_account_id(association)
