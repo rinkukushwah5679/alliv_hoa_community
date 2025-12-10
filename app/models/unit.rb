@@ -263,7 +263,7 @@ class Unit < ApplicationRecord
       unit_id: self.id,
       unit: self.unit_number,
       unit_name: self&.name,
-      type: "upcoming_monthly_due",
+      type: "Upcoming monthly due",
       amount: amount_due,
       total_dues: total_dues,
       ach_convenience_fee: convenience_fee,
