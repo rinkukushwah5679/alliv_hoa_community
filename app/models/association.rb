@@ -109,6 +109,11 @@ class Association < ApplicationRecord
   end
 
   private
+
+  def current_user
+    RequestStore.store[:current_user]
+  end
+
   def test_environment?
     Rails.env.test?
   end
