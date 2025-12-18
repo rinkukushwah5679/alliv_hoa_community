@@ -430,6 +430,10 @@ module V1
 				end
 				# units = @association ? @association.units : current_user.admin_units
 			end
+			# units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil })
+			if params[:for_work_order].present? && params[:for_work_order].to_s == "true"
+				units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil }).distinct
+		  end
 			units
 		end
 
