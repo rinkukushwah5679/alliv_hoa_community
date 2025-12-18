@@ -83,3 +83,4 @@ gem 'acts_as_paranoid', "~> 0.10.3"
 gem 'paper_trail'
 gem 'httparty'
 gem "rails-settings-cached"
+gem 'rubyXL' #For read xlsx file
