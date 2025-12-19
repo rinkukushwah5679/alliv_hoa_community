@@ -73,12 +73,20 @@ class Association < ApplicationRecord
     # max_units = user&.number_units_subscribe || 0
     subs = user.active_subscription
     unless subs.present?
-      errors.add(:base, "You have no active subscription.")
+      if current_user.current_role == "SystemAdmin"
+        errors.add(:base, "You have no active subscription.")
+      else
+        errors.add(:base, "Your owner's association subscription is not active.")
+      end
       return
     end
 
     if subs.end_date.blank? || subs.end_date <= Time.current
-      errors.add(:base, "Your subscription has expired.")
+      if current_user.current_role == "SystemAdmin"
+        errors.add(:base, "Your subscription has expired.")
+      else
+        errors.add(:base, "Your owner's association subscription has expired.")
+      end
       return
     end
     # max_units = user&.number_units_subscribe || 0

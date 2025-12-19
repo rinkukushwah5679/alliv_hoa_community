@@ -146,11 +146,11 @@ module V1
 					user = association.user
 					subs = user.active_subscription
 				  unless subs.present?
-						return render json: {status: 422, success: false, data: nil, message: "Your association owner's subscription is not active." }
+						return render json: {status: 422, success: false, data: nil, message: "Your owner's association subscription is not active." }
 				  end
 
 				  if subs.end_date.blank? || subs.end_date <= Time.current
-						return render json: {status: 422, success: false, data: nil, message: "Your association owner's subscription has expired." }
+						return render json: {status: 422, success: false, data: nil, message: "Your owner's association subscription has expired." }
 					end
 					total_units = subs&.units || 0
 					used_units = Unit.joins(:custom_association).where(associations: { property_manager_id: user.id }).count
