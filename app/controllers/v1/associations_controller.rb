@@ -218,7 +218,7 @@ module V1
 
 		def set_association
 			# @association = current_user.associations.find_by_id(params[:id]) if params[:id]
-			@association = Association.find_by_id(params[:id]) if params[:id]
+			@association = Association.select("associations.*, cm.id AS cm_id, cm.name AS cm_name").joins("LEFT JOIN companies as cm ON cm.id = associations.company_id").find_by_id(params[:id]) if params[:id]
 			# return render json: {errors: {message: ["Association not found"]}}, :status => :not_found unless @association.present?
 			return render json: {status: 404, success: false, data: nil, message: "Association not found"}, :status => :not_found unless @association.present?
 			# return render json: {errors: "Association not found"}, :status => :not_found unless @association.present?
