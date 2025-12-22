@@ -72,7 +72,7 @@ class AssociationsListSerializer < BaseSerializer
   # end
 
   attribute :association_dues do |object|
-    Transaction.select("transactions.*, u.id AS u_id, u.name AS u_name, u.unit_number AS u_unit_number").joins("LEFT OUTER JOIN units as u on u.id = transactions.unit_id").where(is_paid: false, association_id: object.id).where("transaction_date < ?", Date.today).distinct.sum { |a| a[:total_dues].to_f} rescue 10.0
+    Transaction.select("transactions.*, u.id AS u_id, u.name AS u_name, u.unit_number AS u_unit_number").joins("LEFT OUTER JOIN units as u on u.id = transactions.unit_id").where(is_paid: false, association_id: object.id).where("transaction_date < ?", Date.today).distinct.sum { |a| a[:total_dues].to_f} rescue 0.0
   end
 
   attribute :status do |object|
