@@ -1,7 +1,7 @@
 class Unit < ApplicationRecord
   acts_as_paranoid
 	has_paper_trail :on => [:update]
-  validates :surface_area, presence: true
+  validates :surface_area, :unit_number, presence: true
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
 	has_one :ownership_account, dependent: :destroy
 	has_many :unit_financials, dependent: :destroy

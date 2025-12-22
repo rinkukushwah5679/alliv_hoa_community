@@ -29,46 +29,50 @@ class AssociationsListSerializer < BaseSerializer
     object.units.count
   end
 
+  # attribute :association_dues do |object|
+  #   # object.association_due&.amount rescue "0.0"
+  #   results = []
+  #   late_fee_config = object.association_late_payment_fee
+  #   dues = object.association_dues
+
+  #   total_units = object.units.count
+  #   convenience_fee = Setting.unityfi_ach_monthly_fee.to_f # assuming column
+  #   convenience_ach_fee_per_unit = total_units > 0 ? (convenience_fee / total_units).round(2) : 0
+
+  #   object.units.includes(:ownership_account).each do |unit|
+  #     ownership_account = unit.ownership_account
+  #     next if ownership_account.blank?
+
+  #     dues.each do |association_due|
+  #       next if association_due.blank?
+
+  #       case association_due.due_type
+  #       when "dues"
+  #         next unless association_due.frequency == "Monthly"
+
+  #         # Same logic as before for Monthly Dues
+  #         results += unit.calculate_due_entries(association_due, ownership_account, late_fee_config, convenience_ach_fee_per_unit.round(2))
+  #       when "special_assesment"
+  #         if association_due.frequency == "Monthly"
+  #           results += unit.calculate_special_assesment_monthly(association_due, ownership_account, late_fee_config)
+  #         elsif association_due.frequency == "OneTime"
+  #           results += unit.calculate_special_assesment_onetime(association_due, ownership_account, late_fee_config)
+  #         end
+  #       end
+  #     end
+  #   end
+  #   grouped = results.group_by { |r| r[:unit_id] }
+
+  #   final_units = grouped.map do |unit_id, entries|
+  #     {
+  #       overdue_amount: entries.sum { |e| e[:total_dues].to_f }
+  #     }
+  #   end
+  #   final_units.sum { |r| r[:overdue_amount] }
+  # end
+
   attribute :association_dues do |object|
-    # object.association_due&.amount rescue "0.0"
-    results = []
-    late_fee_config = object.association_late_payment_fee
-    dues = object.association_dues
-
-    total_units = object.units.count
-    convenience_fee = Setting.unityfi_ach_monthly_fee.to_f # assuming column
-    convenience_ach_fee_per_unit = total_units > 0 ? (convenience_fee / total_units).round(2) : 0
-
-    object.units.includes(:ownership_account).each do |unit|
-      ownership_account = unit.ownership_account
-      next if ownership_account.blank?
-
-      dues.each do |association_due|
-        next if association_due.blank?
-
-        case association_due.due_type
-        when "dues"
-          next unless association_due.frequency == "Monthly"
-
-          # Same logic as before for Monthly Dues
-          results += unit.calculate_due_entries(association_due, ownership_account, late_fee_config, convenience_ach_fee_per_unit.round(2))
-        when "special_assesment"
-          if association_due.frequency == "Monthly"
-            results += unit.calculate_special_assesment_monthly(association_due, ownership_account, late_fee_config)
-          elsif association_due.frequency == "OneTime"
-            results += unit.calculate_special_assesment_onetime(association_due, ownership_account, late_fee_config)
-          end
-        end
-      end
-    end
-    grouped = results.group_by { |r| r[:unit_id] }
-
-    final_units = grouped.map do |unit_id, entries|
-      {
-        overdue_amount: entries.sum { |e| e[:total_dues].to_f }
-      }
-    end
-    final_units.sum { |r| r[:overdue_amount] }
+    Transaction.select("transactions.*, u.id AS u_id, u.name AS u_name, u.unit_number AS u_unit_number").joins("LEFT OUTER JOIN units as u on u.id = transactions.unit_id").where(is_paid: false, association_id: object.id).where("transaction_date < ?", Date.today).distinct.sum { |a| a[:total_dues].to_f} rescue 10.0
   end
 
   attribute :status do |object|
