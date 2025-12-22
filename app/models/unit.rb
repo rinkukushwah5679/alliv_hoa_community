@@ -2,6 +2,9 @@ class Unit < ApplicationRecord
   acts_as_paranoid
 	has_paper_trail :on => [:update]
   validates :surface_area, :unit_number, presence: true
+  # validates :unit_number, presence: true, format: { with: /\A\d+\z/, message: "only allows numbers" }
+  # validates :unit_number, presence: true, numericality: {only_integer: true, greater_than: 0}
+  validate :unit_number_should_not_have_alphabets
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
 	has_one :ownership_account, dependent: :destroy
 	has_many :unit_financials, dependent: :destroy
@@ -376,6 +379,15 @@ class Unit < ApplicationRecord
   end
 
   private
+
+  def unit_number_should_not_have_alphabets
+    raw_value = unit_number_before_type_cast
+    return if raw_value.blank?
+
+    unless raw_value.to_s.match?(/\A\d+\z/)
+      errors.add(:base, "Alphabet not allow into Unit number")
+    end
+  end
 
   def check_surface_area_change
     # if saved_change_to_surface_area? && custom_association.units.present?
