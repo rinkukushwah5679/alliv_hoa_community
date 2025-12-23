@@ -16,7 +16,7 @@ class UnityfiDepositAccountMailer < ApplicationMailer
     # plain_text = ActionView::Base.full_sanitizer.sanitize(html_body)
     # Notification.create(user_id: @user.id, notifiable: announcement, title: subject, message: plain_text, delivery_methods: ["email", "portal"], created_by: announcement.user_id, updated_by: announcement.user_id)
     mail(
-      to: "rinkukushwah679@gmail.com",
+      to: "Underwriting@unityfisolutions.com",
       subject: "New HOA / Management Company",
     ) do |format|
       format.html { render html: html_body.html_safe }
