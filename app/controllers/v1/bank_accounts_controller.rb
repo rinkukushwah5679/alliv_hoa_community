@@ -317,7 +317,7 @@ module V1
 			begin
 				unityfi_deposit_account = UnityfiDepositAccount.new(unityfi_deposit_params)
 				if unityfi_deposit_account.save
-					UnityfiDepositAccountMailer.unity_deposit_form(unityfi_deposit_account).deliver_now
+					UnityfiDepositAccountMailer.unity_deposit_form(unityfi_deposit_account).deliver_later
 					render json: {data: {id: unityfi_deposit_account.id}, status: 201, success: true, message: "Successfuly submit"}
 				else
 					render json: {status: 422, success: false, data: nil, message: unityfi_deposit_account.errors.full_messages.join(", ")}
