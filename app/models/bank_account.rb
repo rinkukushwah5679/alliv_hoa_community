@@ -10,6 +10,7 @@ class BankAccount < ApplicationRecord
   belongs_to :bank_accountable, polymorphic: true, optional: true
   belongs_to :user, optional: true
   enum :account_purpose, {operating: "operating", reserve: "reserve"}
+  has_many :unityfi_deposit_accounts, dependent: :destroy
   scope :for_current_user, ->(user) {
     where(bank_accountable_type: 'User', bank_accountable_id: user.id)
   }

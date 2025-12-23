@@ -1,0 +1,99 @@
+<h2>New HOA / Management Company</h2>
+
+<table border="1" cellpadding="8" cellspacing="0" width="100%">
+  
+  <tr>
+    <td><strong>Legal Business Name</strong></td>
+    <td><%= @deposit_account.legal_business_name %></td>
+  </tr>
+
+  <tr>
+    <td><strong>Association Name</strong></td>
+    <td><%= @deposit_account.association_name %></td>
+  </tr>
+
+  <tr>
+    <td><strong>Processing Type</strong></td>
+    <td><%= @deposit_account.processing_type %></td>
+  </tr>
+
+  <tr>
+    <td><strong>HOA Address</strong></td>
+    <td>
+      Street Address:- <%= @deposit_account.hoa_address_street_address %><br>
+      Address Line 2:- <%= @deposit_account.hoa_address_line2 %><br>
+      City:- <%= @deposit_account.hoa_address_city %><br>
+      State/Region/Province:- <%= @deposit_account.hoa_address_state_or_region %><br>
+      Postal / Zip Code:- <%= @deposit_account.hoa_address_zip_code %><br>
+      Country:- <%= @deposit_account.hoa_address_country %>
+    </td>
+  </tr>
+
+  <tr>
+    <td><strong>Contact Details</strong></td>
+    <td>
+      Website:- <%= @deposit_account.contact_details_webside %><br>
+      Phone:- <%= @deposit_account.contact_details_phone %>
+    </td>
+  </tr>
+
+  <tr>
+    <td><strong>Deposit Acount</strong></td>
+    <td>
+      Routing Number:- <%= @deposit_account&.deposit_account_routing_number.to_s %><br>
+      Account Number:- <%= @deposit_account&.deposit_account_number.to_s %><br>
+      EIN:- <%= @deposit_account&.deposit_account_ein.to_s %>
+    </td>
+  </tr>
+
+
+  <tr>
+    <td><strong>Primary Contact Name</strong></td>
+    <td>
+      First Name:- <%= @deposit_account.primary_contact_first_name %><br>
+      Last Name:- <%= @deposit_account.primary_contact_last_name %><br>
+      Primary Signer SSN:- <%= @deposit_account.primary_contact_signer_ssn %><br>
+      Primary Contact Email:- <%= @deposit_account.primary_contact_email %>
+    </td>
+  </tr>
+
+  <tr>
+    <td><strong>Additional Signer</strong></td>
+    <td>
+      If there are additional Signers for this location please complete the following:- <%= @deposit_account.additional_signers_location %><br>
+      First Name:- <%= @deposit_account.additional_signer_first_name %><br>
+      Last Name:- <%= @deposit_account.additional_signer_last_name %><br>
+      <% if @deposit_account.additional_signer_dob.present? %>
+      	Additional Signer Date of Birth:- <%= @deposit_account.additional_signer_dob.strftime("%m/%d/%Y") %><br>
+      <% else %>
+      	Additional Signer Date of Birth:- <%= @deposit_account.additional_signer_dob %><br>
+      <% end %>
+      Additional Signer SSN:- <%= @deposit_account.additional_signer_ssn %><br>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<h3>Uploaded Documents</h3>
+<ul>
+  <% if @deposit_account.signers_drivers_license.attached? %>
+    <li>Signers Drivers License </li>
+  <% end %>
+
+  <% if @deposit_account.voided_check_bank_latter_bank_signature_card.attached? %>
+    <li>Voided Check, Bank Letter, or Bank Signature Card</li>
+  <% end %>
+
+  <% if @deposit_account.ssn_or_ein_latter.attached? %>
+    <li>SS4 or EIN Letter</li>
+  <% end %>
+
+  <% if @deposit_account.article_organization_incorporation.attached? %>
+    <li>Articles of Organization or Articles of Incorporation</li>
+  <% end %>
+
+  <% if @deposit_account.additional_signer_drivers_license.attached? %>
+    <li>Additional Signer Drivers License</li>
+  <% end %>
+</ul>

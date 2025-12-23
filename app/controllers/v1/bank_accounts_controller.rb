@@ -313,7 +313,27 @@ module V1
 			# end
 		end
 
+		def submit_unityfi_deposit_account
+			begin
+				unityfi_deposit_account = UnityfiDepositAccount.new(unityfi_deposit_params)
+				if unityfi_deposit_account.save
+					UnityfiDepositAccountMailer.unity_deposit_form(unityfi_deposit_account).deliver_now
+					render json: {data: {id: unityfi_deposit_account.id}, status: 201, success: true, message: "Successfuly submit"}
+				else
+					render json: {status: 422, success: false, data: nil, message: unityfi_deposit_account.errors.full_messages.join(", ")}
+				end
+			rescue StandardError => e
+				Rails.logger.info "****** Unityfi Deposit Account Error #{e.message} ******"
+				render json: {status: 500, success: false, data: nil, message: e.message }
+			end
+		end
+
 		private
+
+		def unityfi_deposit_params
+			params.permit(:bank_account_id, :company_id, :legal_business_name, :association_id, :association_name, :processing_type, :hoa_address_street_address, :hoa_address_line2, :hoa_address_city, :hoa_address_state_or_region, :hoa_address_zip_code, :hoa_address_country, :contact_details_webside, :contact_details_phone, :deposit_account_routing_number, :deposit_account_number, :deposit_account_ein, :primary_contact_first_name, :primary_contact_last_name, :primary_contact_signer_ssn, :primary_contact_email, :additional_signers_location, :additional_signer_first_name, :additional_signer_last_name, :additional_signer_dob, :additional_signer_ssn, :signers_drivers_license, :voided_check_bank_latter_bank_signature_card, :ssn_or_ein_latter, :article_organization_incorporation, :additional_signer_drivers_license)
+		end
+
 		def set_bank
 			@bank_account = current_user.bank_accounts.find_by_id(params[:id]) if params[:id]
 			return render json: {status: 404, success: false, data: nil, message: "Bank Account not found"}, :status => :not_found unless @bank_account.present?
