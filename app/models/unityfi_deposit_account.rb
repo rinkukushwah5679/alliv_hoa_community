@@ -1,5 +1,6 @@
 class UnityfiDepositAccount < ApplicationRecord
   has_paper_trail :on => [:update]
+  acts_as_paranoid
 	ONLY_STRING_REGEX = /\A[a-zA-Z\s]+\z/
 	ONLY_NUMBER_REGEX = /\A\d+\z/
 	validates :legal_business_name, :association_name, :processing_type, :hoa_address_street_address, :hoa_address_line2, :hoa_address_city, :hoa_address_state_or_region, :hoa_address_zip_code, :hoa_address_country, :contact_details_webside, :contact_details_phone, :deposit_account_routing_number, :deposit_account_number, :deposit_account_ein, :primary_contact_first_name, :primary_contact_last_name, :primary_contact_signer_ssn, :primary_contact_email, presence: true
