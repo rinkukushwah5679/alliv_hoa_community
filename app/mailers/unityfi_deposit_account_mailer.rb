@@ -21,11 +21,6 @@ class UnityfiDepositAccountMailer < ApplicationMailer
     ) do |format|
       format.html { render html: html_body.html_safe }
     end
-
-    # mail(
-    #   to: "rinkukushwah679@gmail.com",
-    #   subject: "New HOA / Management Company"
-    # )
   end
 
   private
