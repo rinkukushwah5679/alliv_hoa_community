@@ -57,6 +57,8 @@ env:
     - UNITYFI_BASE_URL
     - UNITYFI_API_KEY
     - UNITYFI_PASSWORD
+    - FLOWISE_SERVER_URL
+    - FLOWISE_KEY
   # clear:
   #   # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
   #   # When you start using multiple servers, you should split out job processing to a dedicated machine.
