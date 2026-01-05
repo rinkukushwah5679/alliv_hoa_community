@@ -76,7 +76,7 @@ module V1
 			  if association.save
 					bank_accounts = create_stripe_bank_account(association)
 			  	# create_stripe_account_id(association)
-			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association created successfully"}, status: :created
+			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association, params: {is_new_record: "true"}).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association created successfully"}, status: :created
 			  else
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end

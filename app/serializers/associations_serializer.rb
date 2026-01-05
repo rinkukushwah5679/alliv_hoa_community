@@ -1,11 +1,16 @@
 class AssociationsSerializer < BaseSerializer
   attributes :id, :company_id, :company_name, :location_user_id, :is_payout_enabled, :name, :telephone_no, :email, :is_active, :status, :web_url, :created_at, :updated_at
 
-  attribute :company_name do |object|
-    if object.cm_id.present?
-      object.cm_name rescue nil
+  attribute :company_name do |object, params|
+    if params[:is_new_record].present? && params[:is_new_record] == "true"
+      company = Company.find object.company_id
+      company.name rescue nil
     else
-      nil
+      if object.cm_id.present?
+        object.cm_name rescue nil
+      else
+        nil
+      end
     end
   end
 
