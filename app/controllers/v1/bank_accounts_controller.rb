@@ -182,7 +182,7 @@ module V1
 					create_funding_account_unityfi(accountable_object, bank)
 				end
 				if accountable_object.class.name == "Association"
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(accountable_object, params: {is_new_record: "true"}).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
 				else
 					bank_accounts = current_user.bank_accounts
 					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], message: "Successfuly Added"}, status: :ok
