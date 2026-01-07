@@ -315,6 +315,11 @@ module V1
 
 		def submit_unityfi_deposit_account
 			begin
+				params[:signers_drivers_license] = nil if params[:signers_drivers_license] == "undefined"
+				params[:voided_check_bank_latter_bank_signature_card] = nil if params[:voided_check_bank_latter_bank_signature_card] == "undefined"
+				params[:ssn_or_ein_latter] = nil if params[:ssn_or_ein_latter] == "undefined"
+				params[:article_organization_incorporation] = nil if params[:article_organization_incorporation] == "undefined"
+				params[:additional_signer_drivers_license] = nil if params[:additional_signer_drivers_license] == "undefined"
 				unityfi_deposit_account = UnityfiDepositAccount.new(unityfi_deposit_params)
 				if unityfi_deposit_account.save
 					UnityfiDepositAccountMailer.unity_deposit_form(unityfi_deposit_account).deliver_later
