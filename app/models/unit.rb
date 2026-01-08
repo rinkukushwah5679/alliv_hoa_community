@@ -4,7 +4,7 @@ class Unit < ApplicationRecord
   validates :surface_area, :unit_number, presence: true
   # validates :unit_number, presence: true, format: { with: /\A\d+\z/, message: "only allows numbers" }
   # validates :unit_number, presence: true, numericality: {only_integer: true, greater_than: 0}
-  validate :unit_number_should_not_have_alphabets
+  # validate :unit_number_should_not_have_alphabets
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
 	has_one :ownership_account, dependent: :destroy
 	has_many :unit_financials, dependent: :destroy
