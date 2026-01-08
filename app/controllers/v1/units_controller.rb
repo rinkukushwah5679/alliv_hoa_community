@@ -190,7 +190,7 @@ module V1
 					end
 
 					CSV.foreach(file.path, headers: true) do |row|
-						unit = Unit.new(unit_number: row[0].to_i, building_no: row[1], floor: row[2], unit_bathrooms: row[3], unit_bedrooms: row[4], surface_area: row[5], street: row[6], city: row[7], state: row[8], zip_code: row[9], association_id: association.id)
+						unit = Unit.new(unit_number: row[0].to_s, building_no: row[1], floor: row[2], unit_bathrooms: row[3], unit_bedrooms: row[4], surface_area: row[5], street: row[6], city: row[7], state: row[8], zip_code: row[9], association_id: association.id)
 						if unit.save
 							valid_units << unit
 						else
@@ -253,7 +253,7 @@ module V1
 					  values = row&.cells&.map { |c| c&.value }
 					  next if values.blank?
 					  data = headers.zip(values).to_h
-					  unit = Unit.new(unit_number: values[0], building_no: values[1], floor: values[2], unit_bathrooms: values[3], unit_bedrooms: values[4], surface_area: values[5], street: values[6], city: values[7], state: values[8], zip_code: values[9], association_id: association.id)
+					  unit = Unit.new(unit_number: values[0].to_s, building_no: values[1], floor: values[2], unit_bathrooms: values[3], unit_bedrooms: values[4], surface_area: values[5], street: values[6], city: values[7], state: values[8], zip_code: values[9], association_id: association.id)
 
 					  if unit.save
 					    valid_units << unit
