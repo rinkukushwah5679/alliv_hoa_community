@@ -74,9 +74,9 @@ module V1
 			  association = current_user.associations.new(association_params)
 			  association.company_id = current_user.company_id if current_user.company_id.present?
 			  if association.save
-					bank_accounts = create_stripe_bank_account(association)
+					# bank_accounts = create_stripe_bank_account(association)
 			  	# create_stripe_account_id(association)
-			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association, params: {is_new_record: "true"}).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association created successfully"}, status: :created
+			    render json: {status: 201, success: true, data: AssociationsSerializer.new(association, params: {is_new_record: "true"}).serializable_hash[:data], failed_bank_accounts: [], message: "Association created successfully"}, status: :created
 			  else
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end
@@ -88,9 +88,9 @@ module V1
 		def update
 			begin
 				if @association.update(association_params)
-					bank_accounts = create_stripe_bank_account(@association)
+					# bank_accounts = create_stripe_bank_account(@association)
 					# render json: AssociationsSerializer.new(@association, meta: { message: "Association updated successfully"}), status: :ok
-					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], failed_bank_accounts: bank_accounts, message: "Association updated successfully"}, status: :ok
+					render json: {status: 200, success: true, data: AssociationsSerializer.new(@association).serializable_hash[:data], failed_bank_accounts: [], message: "Association updated successfully"}, status: :ok
 			  else
 			    # render json: { errors: @association.errors.full_messages.join(", ") }, status: :unprocessable_entity
 			    render json: {status: 422, success: false, data: nil, message: @association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
