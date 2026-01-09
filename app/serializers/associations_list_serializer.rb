@@ -1,5 +1,5 @@
 class AssociationsListSerializer < BaseSerializer
-  attributes :id, :location_user_id, :association_dues, :name, :status, :units_number, :address, :managers, :created_at, :updated_at
+  attributes :id, :location_user_id, :association_dues, :formatted_association_dues, :name, :status, :units_number, :address, :managers, :created_at, :updated_at
 
   attribute :address do |object|
     unless object.association_address
@@ -73,6 +73,11 @@ class AssociationsListSerializer < BaseSerializer
 
   attribute :association_dues do |object|
     Transaction.select("transactions.*, u.id AS u_id, u.name AS u_name, u.unit_number AS u_unit_number").joins("LEFT OUTER JOIN units as u on u.id = transactions.unit_id").where(is_paid: false, association_id: object.id).where("transaction_date < ?", Date.today).distinct.sum { |a| a[:total_dues].to_f} rescue 0.0
+  end
+
+  attribute :formatted_association_dues do |object|
+    amount = Transaction.select("transactions.*, u.id AS u_id, u.name AS u_name, u.unit_number AS u_unit_number").joins("LEFT OUTER JOIN units as u on u.id = transactions.unit_id").where(is_paid: false, association_id: object.id).where("transaction_date < ?", Date.today).distinct.sum { |a| a[:total_dues].to_f} rescue 0.0
+    format_amount(amount)
   end
 
   attribute :status do |object|

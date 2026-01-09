@@ -1,5 +1,5 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :dues_or_balance, :status, :association_id, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
+	attributes :id, :name, :late_penalty_fee_text, :dues_or_balance, :formatted_dues_or_balance, :status, :association_id, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
 
 	attribute :association_name do |object|
 		object&.custom_association&.name rescue nil
@@ -77,33 +77,54 @@ class UnitDetailsSerializer < BaseSerializer
 	end
 
 	attribute :dues_or_balance do |object|
-		results = []
-		association = object.custom_association
+		# results = []
+		# association = object.custom_association
 
-		association_units_count = association.units.count
-		convenience_ach_fee_per_unit = association_units_count.positive? ? (Setting.unityfi_ach_monthly_fee.to_f / association_units_count) : 0
+		# association_units_count = association.units.count
+		# convenience_ach_fee_per_unit = association_units_count.positive? ? (Setting.unityfi_ach_monthly_fee.to_f / association_units_count) : 0
 
-		ownership_account = object.ownership_account
-		next if ownership_account.blank?
+		# ownership_account = object.ownership_account
+		# unless ownership_account.blank?
 
-		all_dues = association.association_dues
-		all_dues.each do |association_due|
-			due_type = association_due.due_type
-			frequency = association_due.frequency
-			next if association_due.blank?
+		# 	all_dues = association.association_dues
+		# 	all_dues.each do |association_due|
+		# 		due_type = association_due.due_type
+		# 		frequency = association_due.frequency
+		# 		next if association_due.blank?
 
-			case due_type
-			when "dues"
-				results += object.calculate_upcoming_due_entries(association_due, ownership_account, convenience_ach_fee_per_unit.round(2))
-			when "special_assesment"
-				if frequency == "Monthly"
-					results += object.calculate_upcoming_special_assesment_monthly(association_due, ownership_account)
-				elsif frequency == "OneTime"
-					results += object.calculate_upcoming_special_assesment_onetime(association_due, ownership_account)
-				end
-			end
+		# 		case due_type
+		# 		when "dues"
+		# 			results += object.calculate_upcoming_due_entries(association_due, ownership_account, convenience_ach_fee_per_unit.round(2))
+		# 		when "special_assesment"
+		# 			if frequency == "Monthly"
+		# 				results += object.calculate_upcoming_special_assesment_monthly(association_due, ownership_account)
+		# 			elsif frequency == "OneTime"
+		# 				results += object.calculate_upcoming_special_assesment_onetime(association_due, ownership_account)
+		# 			end
+		# 		end
+		# 	end
+		# end
+		# results.sum { |r| r[:total_amount].to_f }
+		unit_financial = object.unit_financials.first
+		amount = unit_financial.present? ? unit_financial.amount : 0.0 rescue 0.0
+		amount.to_f
+	end
+
+	attribute :formatted_dues_or_balance do |object|
+		unit_financial = object.unit_financials.first
+		amount = unit_financial.present? ? unit_financial.amount : 0.0 rescue 0.0
+		format_amount(amount)
+	end
+
+	attribute :late_penalty_fee_text do |object, params|
+		if params[:details_page] == "true"
+			late_fee = object.custom_association.association_late_payment_fee
+			amount = late_fee.present? ? late_fee.amount : 0.0 rescue 0.0
+			frequency_days = late_fee.present? ? late_fee.frequency_before_type_cast : 0 rescue 0
+			"Payment is due on the 1st of the month. If payment isn't received, a one-time fee of $#{format_amount(amount)} will be charged on the #{frequency_days.ordinalize} of each month."
+		else
+			nil
 		end
-		results.sum { |r| r[:total_amount].to_f }
 	end
 
 	class << self

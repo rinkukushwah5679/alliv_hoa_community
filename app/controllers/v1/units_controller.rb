@@ -50,7 +50,7 @@ module V1
 		end
 
 		def show
-			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(@unit).serializable_hash[:data], message: "Unit details"}, status: :ok
+			render json: {status: 200, success: true, data: UnitDetailsSerializer.new(@unit, params: {details_page: "true"}).serializable_hash[:data], message: "Unit details"}, status: :ok
 		end
 
 		# def create
