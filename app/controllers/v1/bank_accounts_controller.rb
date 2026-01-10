@@ -15,16 +15,18 @@ module V1
 					bank_accounts = bank_accounts.for_association_ids(association_ids)
 				end
 				totle_balance = bank_accounts.present? ? bank_accounts.sum(:available_balance).to_f : 0.0
+				operating_bank_balance = bank_accounts.where(account_type: "operating").sum(:available_balance).to_f
+				reserve_bank_balance = bank_accounts.where(account_type: "reserve").sum(:available_balance).to_f
 				per_page_value = Setting.per_page_records
 				bank_accounts = bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || per_page_value))
 				# bank_accounts = current_user.bank_accounts.paginate(page: (params[:page] || 1), per_page: (params[:per_page] || 10))
 				total_pages = bank_accounts.present? ? bank_accounts.total_pages : 0
 				if params[:filter] == 'mine'
-					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], totle_balance: totle_balance, pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
+					render json: {status: 200, success: true, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], totle_balance: format_amount(totle_balance), pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
 				else
-					operating_bank_balance = bank_accounts.where(account_type: "operating").sum(:available_balance).to_f
-					reserve_bank_balance = bank_accounts.where(account_type: "reserve").sum(:available_balance).to_f
-					render json: {status: 200, success: true, totle_balance: totle_balance, operating_bank_balance: operating_bank_balance, reserve_bank_balance: reserve_bank_balance, data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
+					# operating_bank_balance = bank_accounts.where(account_type: "operating").sum(:available_balance).to_f
+					# reserve_bank_balance = bank_accounts.where(account_type: "reserve").sum(:available_balance).to_f
+					render json: {status: 200, success: true, totle_balance: format_amount(totle_balance), operating_bank_balance: format_amount(operating_bank_balance), reserve_bank_balance: format_amount(reserve_bank_balance), data: BankAccountSerializer.new(bank_accounts).serializable_hash[:data], pagination_data: {total_pages: total_pages, total_records: bank_accounts.count}, message: "Bank Account list"}, status: :ok
 				end
 			rescue StandardError => e
 				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error

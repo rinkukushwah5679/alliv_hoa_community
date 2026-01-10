@@ -1,9 +1,9 @@
 module ApplicationHelper
-	# def format_amount(amount)
-  #   return "0.00" if amount.blank?
+  def format_amount(amount)
+    return "0.00" if amount.blank?
 
-  #   ActionController::Base.helpers.number_with_precision(amount, precision: 2, delimiter: ",")
-  # end
+    ActionController::Base.helpers.number_with_precision(amount.to_f, precision: 2, delimiter: ",")
+  end
 
   # def format_amount(amount)
   #   return "0.00" if amount.blank?
