@@ -26,6 +26,7 @@ module V1
 			begin
 				vote_management = VoteManagement.new(vote_management_params)
 				if vote_management.save
+					send_vote_management_notification(vote_management)
 					return render json: {status: 201, success: true, data: VoteManagementCreateSerializer.new(vote_management).serializable_hash[:data], message: 'Vote management created successfully.'}
 				else
 					render json: {status: 422, success: false, data: nil, message: vote_management.errors.full_messages.join(", ")}
@@ -79,6 +80,44 @@ module V1
 		end
 
 		private
+
+		def send_vote_management_notification(vote_management)
+			begin
+		    association_id = vote_management.association_id
+
+		    # -------------------------------
+		    # Residents
+		    resident_ids = []
+		    if vote_management.participant_category == "All Members"
+			    resident_ids = OwnershipAccount
+			      .where(association_id: association_id)
+			      .pluck(:unit_owner_id)
+			  end
+
+		    # -------------------------------
+		    # Community Managers
+		    manager_ids = CommunityAssociationManager
+		      .where(association_id: association_id)
+		      .pluck(:user_id)
+
+		    # -------------------------------
+		    # Unique Users
+		    user_ids = (resident_ids + manager_ids).uniq
+
+		    User
+		      .where(id: user_ids)
+		      .includes(:user_setting)
+		      .find_each do |user|
+
+		        setting = user.user_setting
+		        next if setting.present? && !setting.is_notification && !setting.voting_notification
+
+		        VotingMailer.vote_management_created(user, vote_management).deliver_later
+		      end
+		  rescue StandardError => e
+		    Rails.logger.error "*******VotingNotificationJob Error: #{e.message}"
+		  end
+		end
 
 		def vote_management_params
 			params.require(:vote_management).permit(:created_date, :association_id, :meeting_type, :voting_rule_id, :participant_category, :ratification_type, :title, :description, :approval_due_date, vote_management_attachments: [])

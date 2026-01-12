@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial; background: #f8f9fa; padding: 25px;">
+    <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+      <p style="font-size: 15px; color: #555;">
+        Hi <strong><%= @user.full_name || @user.email %></strong>,
+      </p>
+
+      <p style="font-size: 15px; color: #555; line-height: 1.6;">
+        <%= @vote_management&.description %>
+      </p>
+      <p>
+        A new voting has been created for
+        <strong><%= @association.name %></strong>.
+      </p>
+
+      <p>
+        Meeting Type:
+        <strong><%= @vote_management.meeting_type %></strong>
+      </p>
+      <p>
+        Due Date:
+        <strong><%= @vote_management.approval_due_date.strftime("%m/%d/%Y") rescue "N/A" %></strong>
+      </p>
+
+      <p style="font-size: 15px; color: #555; line-height: 1.6;">
+        If you have any questions, our support team is always here to help.
+      </p>
+
+      <br>
+
+      <p style="font-size: 15px; color: #333;">
+        Thank you,<br>
+        <strong>The Alliv Team</strong>
+      </p>
+    </div>
+  </body>
+</html>
