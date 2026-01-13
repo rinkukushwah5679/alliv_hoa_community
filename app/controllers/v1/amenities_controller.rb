@@ -65,11 +65,11 @@ module V1
 		private
 
 		def amenities_params
-			params.require(:amenity).permit(:association_id, :amenity_name, :description, :serial_number_sku, :location, :participants, amenity_attachments: [])
+			params.require(:amenity).permit(:association_id, :amenity_name, :description, :serial_number_sku, :location, :participants, :quantity, amenity_attachments: [])
 		end
 
 		def update_amenities_params
-			params.require(:amenity).permit(:association_id, :amenity_name, :description, :serial_number_sku, :location, :participants)
+			params.require(:amenity).permit(:association_id, :amenity_name, :description, :serial_number_sku, :location, :participants, :quantity)
 		end
 
 		def set_amenity

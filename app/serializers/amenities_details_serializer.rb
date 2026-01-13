@@ -1,5 +1,5 @@
 class AmenitiesDetailsSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :amenity_name, :description, :serial_number_sku, :location, :participants
+  attributes :id, :auto_generate_id, :created_date, :association_id, :association_name, :quantity, :amenity_name, :description, :serial_number_sku, :location, :participants
 
   attribute :created_date do |object|
     object.created_at.strftime("%m/%d/%Y")

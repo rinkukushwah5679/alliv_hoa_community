@@ -115,7 +115,7 @@ module V1
 			end
 			# Always join associations
 		  amenity_reservations = amenity_reservations
-		  	.select("amenity_reservations.*, a.id AS a_id, a.name AS a_name, am.id AS am_id, am.amenity_name AS am_amenity_name")
+				.select("amenity_reservations.*, a.id AS a_id, a.name AS a_name, am.id AS am_id, am.amenity_name AS am_amenity_name, am.quantity AS am_quantity")
 		  	.joins("INNER JOIN associations as a on a.id = amenity_reservations.association_id")
 		  	.joins("INNER JOIN amenities as am on am.id = amenity_reservations.amenity_id")
 		    .joins("INNER JOIN associations ON associations.id = amenity_reservations.association_id")

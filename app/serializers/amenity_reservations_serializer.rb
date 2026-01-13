@@ -34,6 +34,7 @@ class AmenityReservationsSerializer < BaseSerializer
   end
 
   attribute :quantity do |object|
-    0
+    # 0
+    object.am_quantity rescue 0
   end
 end
