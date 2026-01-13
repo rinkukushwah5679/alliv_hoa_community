@@ -3,7 +3,6 @@ class VotingMailer < ApplicationMailer
     @user = user
     @vote_management = vote_management
     @association = vote_management.custom_association
-    @@subscription = Subscription.last
 
     # subject = "📢 New vote_management from #{@association.name}"
     subject = "📢🗳️ #{vote_management.title}"

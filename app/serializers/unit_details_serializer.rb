@@ -41,7 +41,8 @@ class UnitDetailsSerializer < BaseSerializer
 
 	attribute :financials do |object|
 		# object.unit_financials
-		object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
+		# object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
+		[UnitFinancialsSerializer.new(object.unit_financials.first).serializable_hash[:data][:attributes]]
 	end
 
 	attribute :autopay_status do |object|
@@ -121,7 +122,7 @@ class UnitDetailsSerializer < BaseSerializer
 			late_fee = object.custom_association.association_late_payment_fee
 			amount = late_fee.present? ? late_fee.amount : 0.0 rescue 0.0
 			frequency_days = late_fee.present? ? late_fee.frequency_before_type_cast : 0 rescue 0
-			"Payment is due on the 1st of the month. If payment isn't received, a one-time fee of $#{format_amount(amount)} will be charged on the #{frequency_days.ordinalize} of each month."
+			"Payment is due on the 1st of the month. If payment isn't received, a one-time fee of <b>$#{format_amount(amount)}</b> will be charged on the #{frequency_days.ordinalize} of each month."
 		else
 			nil
 		end
