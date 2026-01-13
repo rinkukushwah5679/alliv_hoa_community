@@ -41,8 +41,8 @@ class UnitDetailsSerializer < BaseSerializer
 
 	attribute :financials do |object|
 		# object.unit_financials
-		# object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
-		[UnitFinancialsSerializer.new(object.unit_financials.first).serializable_hash[:data][:attributes]]
+		object.unit_financials.map { |unit_financial| UnitFinancialsSerializer.new(unit_financial).serializable_hash[:data][:attributes] }
+		# [UnitFinancialsSerializer.new(object.unit_financials.first).serializable_hash[:data][:attributes]]
 	end
 
 	attribute :autopay_status do |object|
