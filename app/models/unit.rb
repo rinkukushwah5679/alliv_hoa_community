@@ -53,7 +53,7 @@ class Unit < ApplicationRecord
   def amount_due(association_due)
     due = association_due
     # return 0 unless due.present?
-    return due.amount*surface_area if due.distribution_type ==  "Pro Rata Distribution"
+    return due.amount*surface_area.to_f if due.distribution_type ==  "Pro Rata Distribution"
     return due.amount
   end
 
