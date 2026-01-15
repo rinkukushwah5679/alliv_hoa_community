@@ -317,6 +317,12 @@ module V1
 
 		def submit_unityfi_deposit_account
 			begin
+				# check_terms_conditions!
+				terms = ActiveModel::Type::Boolean.new.cast(params[:terms_conditions])
+				unless params.key?(:terms_conditions) && terms == true
+					return render json: {status: 422, success: false, data: nil, message: "Please accept the Terms & Conditions to continue."}# unless params[:terms_conditions]
+				end
+
 				params[:signers_drivers_license] = nil if params[:signers_drivers_license] == "undefined"
 				params[:voided_check_bank_latter_bank_signature_card] = nil if params[:voided_check_bank_latter_bank_signature_card] == "undefined"
 				params[:ssn_or_ein_latter] = nil if params[:ssn_or_ein_latter] == "undefined"
@@ -338,7 +344,7 @@ module V1
 		private
 
 		def unityfi_deposit_params
-			params.permit(:bank_account_id, :company_id, :legal_business_name, :association_id, :association_name, :processing_type, :hoa_address_street_address, :hoa_address_line2, :hoa_address_city, :hoa_address_state_or_region, :hoa_address_zip_code, :hoa_address_country, :contact_details_webside, :contact_details_phone, :deposit_account_routing_number, :deposit_account_number, :deposit_account_ein, :primary_contact_first_name, :primary_contact_last_name, :primary_contact_signer_ssn, :primary_contact_email, :additional_signers_location, :additional_signer_first_name, :additional_signer_last_name, :additional_signer_dob, :additional_signer_ssn, :signers_drivers_license, :voided_check_bank_latter_bank_signature_card, :ssn_or_ein_latter, :article_organization_incorporation, :additional_signer_drivers_license)
+			params.permit(:bank_account_id, :company_id, :legal_business_name, :association_id, :association_name, :processing_type, :hoa_address_street_address, :hoa_address_line2, :hoa_address_city, :hoa_address_state_or_region, :hoa_address_zip_code, :hoa_address_country, :contact_details_webside, :contact_details_phone, :deposit_account_routing_number, :deposit_account_number, :deposit_account_ein, :primary_contact_first_name, :primary_contact_last_name, :primary_contact_signer_ssn, :primary_contact_email, :additional_signers_location, :additional_signer_first_name, :additional_signer_last_name, :additional_signer_dob, :additional_signer_ssn, :signers_drivers_license, :voided_check_bank_latter_bank_signature_card, :ssn_or_ein_latter, :article_organization_incorporation, :additional_signer_drivers_license, :terms_conditions)
 		end
 
 		def set_bank

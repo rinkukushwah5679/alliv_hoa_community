@@ -75,6 +75,12 @@
 
 <br>
 
+<h3>
+  <input type="checkbox" disabled
+    <%= "checked" if @deposit_account.terms_conditions == true %> >
+  I agree to the Terms & Conditions
+</h3>
+
 <h3>Uploaded Documents</h3>
 <ul>
   <% if @deposit_account.signers_drivers_license.attached? %>
