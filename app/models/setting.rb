@@ -1,5 +1,6 @@
 # RailsSettings Model
 class Setting < RailsSettings::Base
+  has_paper_trail :on => [:update]
   cache_prefix { "v1" }
 
   after_commit :clear_cache
