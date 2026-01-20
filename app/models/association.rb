@@ -41,7 +41,7 @@ class Association < ApplicationRecord
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
   after_create :create_stripe_account_id, :create_user_on_unityfi#, :create_folder_on_flowise
-
+  # before_save :set_email_in_downcase
   # def status
   #   is_active ? "Active" : "Inactive"
   # end
@@ -58,7 +58,11 @@ class Association < ApplicationRecord
   #     end
   #   end
   # end
-
+  # def set_email_in_downcase
+  #   if self.email.present?
+  #     self.email = email.downcase
+  #   end
+  # end
 
   def set_is_active_flag
     if status == "Active"
