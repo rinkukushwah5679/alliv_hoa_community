@@ -71,6 +71,7 @@ module V1
 
 		def create
 			begin
+				Rails.logger.info " \e[31m=============Received association values: #{params} ============== \e[0m"
 			  association = current_user.associations.new(association_params)
 			  association.company_id = current_user.company_id if current_user.company_id.present?
 			  if association.save
@@ -81,6 +82,7 @@ module V1
 			    render json: {status: 422, success: false, data: nil, message: association.errors.full_messages.join(", ")}, :status => :unprocessable_entity
 			  end
 		  rescue StandardError => e
+		  	Rails.logger.info " \e[31m=============Association create fail errors: #{e.message} ============== \e[0m"
 				render json: {status: 500, success: false, data: nil, message: e.message }, :status => :internal_server_error
 			end
 		end
