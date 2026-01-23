@@ -432,7 +432,8 @@ module V1
 			end
 			# units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil })
 			if params[:for_work_order].present? && params[:for_work_order].to_s == "true"
-				units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil }).distinct
+				# units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil }).distinct
+				units = units.joins(ownership_account: :user).distinct
 		  end
 			units
 		end
