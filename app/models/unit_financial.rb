@@ -1,5 +1,6 @@
 class UnitFinancial < ApplicationRecord
 	default_scope { order(created_at: :asc) }
+	validates :amount, numericality: { greater_than: 0 }
 	enum :frequency, %w(Monthly OneTime)
 	belongs_to :unit
 	before_create :set_association
