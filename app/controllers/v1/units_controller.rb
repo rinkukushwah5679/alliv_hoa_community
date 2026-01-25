@@ -98,11 +98,13 @@ module V1
 					auto.is_active = false
 					message = "Autopay disabled successfully"
 				else
-					return render json: {status: 422, success: false, data: nil, message: "Please choose bank account"} unless params[:payment_method_id].present?
+					payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+					# return render json: {status: 422, success: false, data: nil, message: "Please choose bank account"} unless params[:payment_method_id].present?
+					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
 					# Either new record or inactive, so enable it
 					auto.is_active = true
 					auto.amount = params[:amount] if params[:amount].present?
-					auto.payment_method_id = params[:payment_method_id] if params[:payment_method_id].present? #this is bank id
+					auto.payment_method_id = params[:payment_method_id] if payment_method.present? #this is bank id
 					# auto.bank_account_id = params[:bank_account_id] if params[:bank_account_id].present? #Removed thid column bank_account_id
 					# auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
 					auto.total_dues = params[:total_dues]
@@ -111,6 +113,7 @@ module V1
 					auto.unityfi_ach_monthly_fee = params[:unityfi_ach_monthly_fee]
 					auto.association_due_id = params[:association_due_id]
 					auto.due_date = params[:due_date]
+					auto.community_convenience_fee = (convenience_fee.to_f - unityfi_ach_monthly_fee.to_f).round(2)
 					message = "Autopay enabled successfully"
 				end
 
