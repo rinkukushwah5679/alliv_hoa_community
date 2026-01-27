@@ -113,7 +113,7 @@ module V1
 					auto.unityfi_ach_monthly_fee = params[:unityfi_ach_monthly_fee]
 					auto.association_due_id = params[:association_due_id]
 					auto.due_date = params[:due_date]
-					auto.community_convenience_fee = (convenience_fee.to_f - unityfi_ach_monthly_fee.to_f).round(2)
+					auto.community_convenience_fee = (auto.convenience_fee.to_f - auto.unityfi_ach_monthly_fee.to_f).round(2)
 					message = "Autopay enabled successfully"
 				end
 
