@@ -159,23 +159,36 @@ module V1
 					.left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
 				  .yield_self { |query|
-				    case current_user.current_role
-			    	when "Resident"
+				    # case current_user.current_role
+				    case current_user.res_or_sa_of_bm
+			    	# when "Resident"
+			    	when "Resident", "BoardMember+Resident"
 				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
 				    when "AssociationManager"
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
-				    else# "BoardMember", "SystemAdmin"
+				    # when "BoardMember", "SystemAdmin"
+				    when "SystemAdmin", "BoardMember+SystemAdmin"
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
+						else
+						# If there is any other role, then by default check all the roles.
+							query = query.where(
+								"ownership_accounts.unit_owner_id = :user_id OR community_association_managers.user_id = :user_id OR associations.property_manager_id = :user_id",
+								user_id: current_user.id
+							)
 				    end
 				    query
 				  }
 				  .distinct
 				association_ids = associations.map(&:id)
-				if current_user.current_role == "Resident"
-					VoteManagement.where(association_id: association_ids, participant_category: "All Members")
-				else
-					VoteManagement.where(association_id: association_ids)
-				end
+				# if current_user.current_role == "Resident"
+					# VoteManagement.where(association_id: association_ids, participant_category: "All Members")
+				# else
+				VoteManagement.where(association_id: association_ids)
+				# end
+			end
+
+			if current_user.current_role == "Resident"
+				vote_managements = vote_managements.where(participant_category: "All Members")
 			end
 
 			if params[:vote_approvals].present? && params[:vote_approvals].to_s == "true"

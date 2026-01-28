@@ -96,12 +96,15 @@ module V1
 				  .left_joins(units: :ownership_account)
 				  .left_joins(:community_association_managers)
 				  .yield_self { |query|
-				    case current_user.current_role
-				    when "Resident"
+				    # case current_user.current_role
+				    case current_user.res_or_sa_of_bm
+				    # when "Resident"
+				    when "Resident", "BoardMember+Resident"
 				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
 				    when "AssociationManager"
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
-				    when "BoardMember", "SystemAdmin"
+				    # when "BoardMember", "SystemAdmin"
+				    when "SystemAdmin", "BoardMember+SystemAdmin"
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
 				    else
 				      # If there is any other role, then by default check all the roles.
@@ -115,11 +118,14 @@ module V1
 				  .distinct
 				# associations = current_user.associations
 				association_ids = associations.map(&:id)
-				if current_user.current_role == "Resident"
-					Amenity.where(association_id: associations.map(&:id), participants: "All Members")
-				else
-					Amenity.where(association_id: associations.map(&:id))
-				end
+				# if current_user.current_role == "Resident"
+					# Amenity.where(association_id: associations.map(&:id), participants: "All Members")
+				# else
+				Amenity.where(association_id: associations.map(&:id))
+				# end
+			end
+			if current_user.current_role == "Resident"
+				amenities = amenities.where(participants: "All Members")
 			end
 			amenities = amenities.joins("INNER JOIN associations ON associations.id = amenities.association_id")
 
