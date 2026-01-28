@@ -36,6 +36,12 @@ class User < ApplicationRecord
   def primary_card
     payment_methods.find_by(is_primary: true)
   end
+
+  def res_or_sa_of_bm
+    return current_role unless self.has_role?("BoardMember")
+    return "BoardMember+SystemAdmin" if self.has_role?("SystemAdmin")
+    return "BoardMember+Resident"
+  end
   # def can_create_more_units?(user)
   #   Unit.joins(:custom_association).where(associations: { property_manager_id: user.id }).count < (user.number_units_subscribe || 0)
   # end
