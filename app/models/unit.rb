@@ -16,7 +16,7 @@ class Unit < ApplicationRecord
 	has_one_attached :notice_document
 	# before_create :user_unit_limit_not_exceeded
 	# before_create :set_unit_number
-  after_save :check_surface_area_change
+  after_save :check_surface_area_change, :assign_and_remove_role_to_resident
   # before_commit :update_allocation
   after_destroy :recalculate_allocation_after_destroy
  
@@ -28,6 +28,21 @@ class Unit < ApplicationRecord
   def set_unit_number
     last_unit_number = Unit.unscoped.maximum(:unit_number) || 001
     self.unit_number = last_unit_number + 1
+  end
+
+
+  def assign_and_remove_role_to_resident
+    # ownership_account = self.ownership_account
+    return if ownership_account.blank?
+
+    owner = ownership_account.user
+    return if owner.blank?
+
+    if ownership_account.is_owner_association_board_member
+      owner.add_role("BoardMember")
+    elsif !owner.has_role?("SystemAdmin")
+      owner.remove_role("BoardMember")
+    end
   end
 
 	def user_unit_limit_not_exceeded
