@@ -35,6 +35,7 @@ class Association < ApplicationRecord
   has_many :vote_managements, dependent: :destroy
   has_one :management_fee, dependent: :destroy
   has_many :work_orders
+  belongs_to :company, optional: true
   accepts_nested_attributes_for :management_fee
   accepts_nested_attributes_for :voting_rules, allow_destroy: true
   validate :validate_units_limit
@@ -116,6 +117,10 @@ class Association < ApplicationRecord
 
   def primary_bank_account
     bank_accounts.find_by(is_primary: true)
+  end
+
+  def signature_name
+    company.name.titleize rescue self&.name&.titleize
   end
 
   private
