@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :payment_methods, dependent: :destroy
   has_many :amenity_reservations, dependent: :destroy
   has_one :user_setting, dependent: :destroy
+  belongs_to :company, optional: true
   def is_subscription_active
     subscription = subscriptions.where(status: "active").last
     return subscription.present? && subscription.end_date.present? && subscription.end_date >= Time.current
@@ -35,6 +36,10 @@ class User < ApplicationRecord
 
   def primary_card
     payment_methods.find_by(is_primary: true)
+  end
+
+  def signature_name
+    company.name.titleize rescue "The Alliv Team"
   end
 
   def res_or_sa_of_bm

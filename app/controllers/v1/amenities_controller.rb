@@ -26,6 +26,7 @@ module V1
 			begin
 				@amenity = Amenity.new(amenities_params)
 				if @amenity.save
+					notification_for_amenity_booking_when_create(@amenity)
 					render json: {status: 200, success: true, data: AmenitiesSerializer.new(@amenity).serializable_hash[:data], message: "Updated successfully."}
 				else
 					render json: {status: 422, success: false, data: nil, message: @amenity.errors.full_messages.join(", ")}
@@ -63,6 +64,55 @@ module V1
 		end
 
 		private
+
+		def notification_for_amenity_booking_when_create(amenity)
+			begin
+		    association_id = amenity.association_id
+
+		    # -------------------------------
+		    resident_ids = []
+		    # manager_ids = []
+		    if amenity.participants == "All Members"
+		    	# Residents
+			    resident_ids = OwnershipAccount.where(association_id: association_id).pluck(:unit_owner_id)
+			  end
+
+			  # recipients =
+				#   case amenity.participants
+				#   when "All Members"
+				#     association.unit_owners + association.board_members
+				#   when "Board Only"
+				#     association.board_members
+				#   else
+				#     []
+				#   end
+
+		    # -------------------------------
+		    # Unique Users
+		    user_ids = (resident_ids).uniq
+		    association = amenity.custom_association
+
+		    User
+		      .where(id: user_ids)
+		      .includes(:user_setting)
+		      .find_each do |user|
+
+		        setting = user.user_setting
+		        next if setting.present? && !setting.is_notification# && !setting.announcements_notifications
+
+		        AmenityMailer.notification_for_amenity_booking(user, amenity, association).deliver_later
+		      end
+	      board_members = association.board_members
+
+				board_members.each do |board_member|
+					setting = board_member.user_setting
+	        next if setting.present? && !setting.is_notification
+					AmenityMailer.board_members_notification_for_amenity_booking(board_member, amenity, association).deliver_later
+				end
+		  rescue StandardError => e
+		    Rails.logger.error "*******Amenity Notification Job Error: #{e.message}"
+		  end
+		end
 
 		def amenities_params
 			params.require(:amenity).permit(:association_id, :amenity_name, :description, :serial_number_sku, :location, :participants, :quantity, amenity_attachments: [])

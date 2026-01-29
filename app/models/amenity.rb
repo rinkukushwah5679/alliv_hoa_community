@@ -6,6 +6,7 @@ class Amenity < ApplicationRecord
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	has_many_attached :amenity_attachments
 	has_many :amenity_reservations, dependent: :destroy
+	has_many :notifications, as: :notifiable, dependent: :destroy
 	before_create :set_auto_generate_id
 	def set_auto_generate_id
 		last_request_id = Amenity.unscoped.maximum(:auto_generate_id) || 1000

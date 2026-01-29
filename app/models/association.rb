@@ -35,6 +35,7 @@ class Association < ApplicationRecord
   has_many :vote_managements, dependent: :destroy
   has_one :management_fee, dependent: :destroy
   has_many :work_orders
+  has_many :ownership_accounts
   belongs_to :company, optional: true
   accepts_nested_attributes_for :management_fee
   accepts_nested_attributes_for :voting_rules, allow_destroy: true
@@ -121,6 +122,22 @@ class Association < ApplicationRecord
 
   def signature_name
     company.name.titleize rescue self&.name&.titleize
+  end
+
+  def board_members
+    unit_owner_ids = ownership_accounts.map(&:unit_owner_id)
+    User.joins(:roles)
+    .where(roles: { name: "BoardMember" })
+    .where(id: unit_owner_ids)
+    .or(User
+      .joins(:roles)
+      .where(roles: { name: "BoardMember" }, id: user.id)
+    )
+    .distinct
+  end
+
+  def unit_owners
+    User.where(id: ownership_accounts.select(:unit_owner_id)).distinct
   end
 
   private
