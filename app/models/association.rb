@@ -36,6 +36,7 @@ class Association < ApplicationRecord
   has_one :management_fee, dependent: :destroy
   has_many :work_orders
   has_many :ownership_accounts
+  has_many :association_insurance_reviews, dependent: :destroy
   belongs_to :company, optional: true
   accepts_nested_attributes_for :management_fee
   accepts_nested_attributes_for :voting_rules, allow_destroy: true
