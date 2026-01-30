@@ -398,7 +398,9 @@ module V1
 		# Reusable units fetcher
 		def fetch_units_for_current_user
 			# if current_user.has_role?(:Resident)
-			if current_user.current_role == "Resident"
+			# if current_user.current_role == "Resident"
+			case current_user.res_or_sa_of_bm
+			when "Resident", "BoardMember+Resident"
 				if @association
 					units = Unit.joins(:ownership_account).where(
 						ownership_accounts: {
@@ -441,6 +443,41 @@ module V1
 			units
 		end
 
+		# def fetch_units_for_current_user
+		# 	units = if @association.present?
+		# 		@association.units
+		# 	else
+		# 		associations = Association
+		# 		  .left_joins(units: :ownership_account)
+		# 		  .left_joins(:community_association_managers)
+		# 		  .yield_self { |query|
+		# 		  	case current_user.res_or_sa_of_bm
+		# 		  	when "Resident", "BoardMember+Resident"
+		# 		  		query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+		# 		  	when "AssociationManager"
+		# 		  		query = query.where("community_association_managers.user_id = ?", current_user.id)
+		# 		  	else
+		# 		  		query = query.where("associations.property_manager_id = ?", current_user.id)
+		# 		  	end
+		# 		  }
+		# 		  .distinct
+		# 	  association_ids = associations.map(&:id)
+		# 	  Unit.where(association_id: associations.map(&:id))
+		# 	end
+		# 	case current_user.res_or_sa_of_bm
+		# 	when "Resident", "BoardMember+Resident"
+		# 		units = units.joins(:ownership_account).where(
+		# 			ownership_accounts: {unit_owner_id: current_user.id}
+		# 		)
+		# 	else
+		# 		units = units
+		# 	end
+		# 	if params[:for_work_order].present? && params[:for_work_order].to_s == "true"
+		# 		# units = units.joins(:ownership_account).where.not(ownership_accounts: { unit_owner_id: nil }).distinct
+		# 		units = units.joins(ownership_account: :user).distinct
+		#   end
+		#   units
+		# end
 
 
 		def unit_params

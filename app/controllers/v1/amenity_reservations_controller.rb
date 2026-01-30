@@ -92,9 +92,12 @@ module V1
 			else
 				associations = Association
 				  .left_joins(units: :ownership_account)
+				  .left_joins(:community_association_managers)
 				  .yield_self { |query|
-				    case current_user.current_role
-				    when "Resident"
+				    # case current_user.current_role
+				    case current_user.res_or_sa_of_bm
+				    # when "Resident"
+				    when "Resident", "BoardMember+Resident"
 				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
 				    when "AssociationManager"
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
