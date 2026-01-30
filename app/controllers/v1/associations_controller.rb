@@ -24,17 +24,20 @@ module V1
 				  .left_joins(:community_association_managers)
 				  .left_joins(:work_orders)
 				  .yield_self { |query|
-				    case current_user.current_role
-				    when "Resident"
+				    # case current_user.current_role
+				    case current_user.res_or_sa_of_bm
+				    # when "Resident"
+				    when "Resident", "BoardMember+Resident"
 				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
 				    when "AssociationManager"
 				      query = query.where("community_association_managers.user_id = ?", current_user.id)
-				    when "BoardMember", "SystemAdmin"
+				    # when "BoardMember", "SystemAdmin"
+				    when "SystemAdmin", "BoardMember+SystemAdmin"
 				      query = query.where("associations.property_manager_id = ?", current_user.id)
 				    when "Vendor"
 							# 👇 Fetch associations where this vendor has work orders
 							# query = query.where("work_orders.vendor_id = ?", current_user.id)
-							query = query.where("associations.property_manager_id = ?", current_user.created_by)
+							query = query.where("associations.company_id = ?", current_user.company_id)
 				    else
 				      # If there is any other role, then by default check all the roles.
 				      query = query.where(
