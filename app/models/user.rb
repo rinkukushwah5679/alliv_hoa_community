@@ -42,6 +42,24 @@ class User < ApplicationRecord
     company.name.titleize rescue "The Alliv Team"
   end
 
+  def role_name(role)
+    if role == "SystemAdmin"
+      "System Admin"
+    elsif role == "BoardMember"
+      "Board Member"
+    elsif role == "AssociationManager"
+      "Association Manager"
+    elsif role == "PropertyOwner"
+      "Property Owner"
+    elsif role == "PropertyManager"
+      "Property Manager"
+    elsif role == "SuperAdmin"
+      "Super Admin"
+    else
+      role
+    end
+  end
+
   def res_or_sa_of_bm
     return current_role unless self.has_role?("BoardMember")
     return "BoardMember+SystemAdmin" if self.has_role?("SystemAdmin")

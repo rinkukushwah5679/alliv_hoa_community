@@ -26,13 +26,14 @@ module V1
 			begin
 				@amenity_reservation = current_user.amenity_reservations.new(amenities_params)
 				if @amenity_reservation.save
+					notify_admins_and_managers(@amenity_reservation)
 					render json: {status: 200, success: true, data: AmenityReservationCreateSerializer.new(@amenity_reservation).serializable_hash[:data], message: "Updated successfully."}
 				else
 					render json: {status: 422, success: false, data: nil, message: @amenity_reservation.errors.full_messages.join(", ")}
 
 				end
 			rescue StandardError => e
-				Rails.logger.info "==========Amenity reservation create error #{e.message}"
+				Rails.logger.info "\e[31m ==========Amenity reservation create error #{e.message} \e[0m"
 				render json: {status: 500, success: false, data: nil, message: e.message}
 			end
 		end
@@ -57,6 +58,32 @@ module V1
 		end
 
 		private
+
+		def notify_admins_and_managers(am_res)
+			begin
+				association = am_res.custom_association
+				manager_ids = CommunityAssociationManager
+			      .where(association_id: am_res.association_id)
+			      .pluck(:user_id)
+
+		    # -------------------------------
+		    # Unique Users
+		    user_ids = ([association.property_manager_id] + manager_ids).uniq
+
+		    User
+		      .where(id: user_ids)
+		      .includes(:user_setting)
+		      .find_each do |user|
+
+		        setting = user.user_setting
+		        next if setting.present? && !setting.is_notification && !setting.voting_notification
+
+		        AmenityMailer.notify_admins_and_managers_when_booking_amenity(user, am_res, association).deliver_later
+		      end
+			rescue StandardError => e
+		    Rails.logger.error "\e[31m*******Reservation notify Error: #{e.message} \e[0m"
+			end
+		end
 
 		def amenities_params
 			params.require(:amenity_reservation).permit(:association_id, :amenity_id, :description, :serial_number_sku, :location, :reservation_date, :start_time, :end_time)

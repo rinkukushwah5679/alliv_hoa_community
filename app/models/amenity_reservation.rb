@@ -1,6 +1,8 @@
 class AmenityReservation < ApplicationRecord
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	belongs_to :amenity
+	belongs_to :user
+	has_many :notifications, as: :notifiable, dependent: :destroy
 	validates :reservation_date, :start_time, :end_time, presence: true
 	validate :start_time_should_be_before_end_time
 	before_create :set_auto_generate_id

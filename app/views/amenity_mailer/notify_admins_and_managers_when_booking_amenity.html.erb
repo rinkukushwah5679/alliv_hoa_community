@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial; background: #f8f9fa; padding: 25px;">
+    <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+
+      <p>Hello <strong><%= @user.full_name || @user.email %></strong>,</p>
+    	<p><strong>A new amenity reservation has been created.</strong></p>
+
+      <p>
+        <strong>Reserved by:</strong> <%= @reserved_by&.full_name&.titleize %> (<%= @reserved_by.role_name(@reserved_by.current_role) %>)
+      </p>
+      <p>
+        <strong>Amenity Name:</strong> <%= @amenity&.amenity_name&.titleize %>
+      </p>
+
+      <p>
+        <strong>Location:</strong> <%= @reservation&.location %>
+      </p>
+
+      <p>
+        <strong>Date:</strong> <%= @reservation.reservation_date.strftime("%m/%d/%Y") rescue "N/A" %>
+      </p>
+
+      <p>
+        <strong>Time:</strong> <%= @reservation.start_time.strftime("%I:%M %p") rescue "N/A" %> - <%= @reservation.end_time.strftime("%I:%M %p") rescue "N/A" %>
+      </p>
+
+      <p>
+        <strong>Association:</strong> <%= @association&.name %>
+      </p>
+
+
+      <p style="font-size: 15px; color: #555; line-height: 1.6;">
+        If you have any questions, our support team is always here to help.
+      </p>
+
+      <p style="font-size: 15px; color: #333;">
+        Thank you,<br>
+        <strong><%= @user.signature_name %></strong>
+      </p>
+		</div>
+  </body>
+</html>
