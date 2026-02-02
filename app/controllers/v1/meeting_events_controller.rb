@@ -25,6 +25,7 @@ module V1
 			begin
 				@event = MeetingEvent.new(events_params)
 				if @event.save
+					notify_for_new_meeting_scheduled(@event)
 					render json: {status: 200, success: true, data: MeetingEventsSerializer.new(@event).serializable_hash[:data], message: "Updated successfully."}
 				else
 					render json: {status: 422, success: false, data: nil, message: @event.errors.full_messages.join(", ")}
@@ -54,6 +55,47 @@ module V1
 		end
 
 		private
+
+		def notify_for_new_meeting_scheduled(meeting)
+			begin
+				association = meeting.custom_association
+
+		    resident_ids = []
+		    manager_ids = []
+		    if meeting.participants == "All Members"
+					# Residents
+			    resident_ids = OwnershipAccount.where(association_id: meeting.association_id).pluck(:unit_owner_id)
+				  # Community Managers
+			    manager_ids = CommunityAssociationManager
+			      .where(association_id: meeting.association_id)
+			      .pluck(:user_id)
+			  end
+
+		    # -------------------------------
+		    # Unique Users
+		    user_ids = (resident_ids + manager_ids + [association.property_manager_id]).uniq
+				User
+		      .where(id: user_ids)
+		      .includes(:user_setting)
+		      .find_each do |user|
+
+		        setting = user.user_setting
+		        next if setting.present? && !setting.is_notification && !setting.voting_notification
+
+		        MeetingEventMailer.notify_admins_and_managers_when_create_meeting(user, meeting, association).deliver_later
+		      end
+
+		    board_members = association.board_members
+
+				board_members.each do |board_member|
+					setting = board_member.user_setting
+	        next if setting.present? && !setting.is_notification
+					MeetingEventMailer.notify_admins_and_managers_when_create_meeting(board_member, meeting, association).deliver_later
+				end
+			rescue StandardError => e
+		    Rails.logger.error "\e[31m*******Meeting notify Error: #{e.message} \e[0m"
+			end
+		end
 
 		def events_params
 			params.require(:events).permit(:association_id, :title, :description, :meeting_type, :user_id, :unit_number, :meeting_date, :start_time, :end_time, :location, :address, :latitude, :longitude, :meeting_link, :participants, event_attachments: [])

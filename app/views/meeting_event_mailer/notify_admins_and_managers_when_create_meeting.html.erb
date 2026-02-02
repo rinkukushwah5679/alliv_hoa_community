@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, Helvetica, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+            <!-- Header -->
+            <tr>
+              <td style="background-color:#2c3e50; padding:16px 24px;">
+                <h1 style="margin:0; color:#ffffff; font-size:20px;">
+                  📅 Meeting / Event Notification
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:24px;">
+                <p style="font-size:14px; color:#333; margin-top:0;">
+                  Hi <strong><%= @user&.full_name || @user&.email %></strong>,
+                </p>
+                <p style="font-size:14px; color:#555; margin-top:0;">
+                  A new meeting/event has been scheduled for your association. Please review the details below:
+                </p>
+
+                <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse; margin-top:16px; font-size:14px;">
+                  <tr>
+                    <td style="font-weight:bold; width:35%;">Title</td>
+                    <td><%= @meeting&.title %></td>
+                  </tr>
+
+                  <tr style="background-color:#f9f9f9;">
+                    <td style="font-weight:bold;">Meeting Type</td>
+                    <td><%= @meeting&.meeting_type %></td>
+                  </tr>
+
+                  <tr>
+                    <td style="font-weight:bold;">Date</td>
+                    <td><%= @meeting&.meeting_date.strftime("%m/%d/%Y") rescue "N/A" %></td>
+                  </tr>
+
+                  <tr style="background-color:#f9f9f9;">
+                    <td style="font-weight:bold;">Time</td>
+                    <td><%= @meeting&.start_time.strftime("%I:%M %p") rescue "N/A" %> – <%= @meeting&.end_time.strftime("%I:%M %p") rescue "N/A" %></td>
+                  </tr>
+
+                  <tr>
+                    <td style="font-weight:bold;">Location</td>
+                    <td><%= @meeting&.location %></td>
+                  </tr>
+
+                  <tr style="background-color:#f9f9f9;">
+                    <td style="font-weight:bold;">Address</td>
+                    <td><%= @meeting&.address %></td>
+                  </tr>
+
+                  <% if @meeting&.meeting_link.present? %>
+                    <tr>
+                      <td style="font-weight:bold;">Meeting Link</td>
+                      <td>
+                        <a href="<%= @meeting&.meeting_link %>" target="_blank" style="color:#1a73e8; text-decoration:none;">
+                          Join Meeting
+                        </a>
+                      </td>
+                    </tr>
+                  <% end %>
+
+                  <tr style="background-color:#f9f9f9;">
+                    <td style="font-weight:bold;">Association</td>
+                    <td><%= @association.name %></td>
+                  </tr>
+                </table>
+
+                <p style="font-size:14px; color:#555; margin-top:20px;">
+                  <strong>Description:</strong><br>
+                  <%= @meeting.description %>
+                </p>
+
+                <p style="font-size:13px; color:#777; margin-top:20px;">
+                  This notification has been sent to all Unit Owners, Managers, Admin, and Board Members of the association.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color:#f1f1f1; padding:16px 24px; text-align:center;">
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                  If you have any questions, our support team is always here to help.
+                </p>
+                <p style="margin:0; font-size:12px; color:#777;">
+                  Regards,<br>
+                  <strong><%= @user.signature_name %></strong>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

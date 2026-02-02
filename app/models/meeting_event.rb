@@ -9,6 +9,7 @@ class MeetingEvent < ApplicationRecord
   validate :user_must_exist
 	before_create :set_auto_generate_id
   has_many_attached :event_attachments
+  has_many :notifications, as: :notifiable, dependent: :destroy
 	# validate :meeting_date_cannot_be_in_past
 	validate :start_time_should_be_before_end_time
 
