@@ -1,7 +1,8 @@
 class Unit < ApplicationRecord
   acts_as_paranoid
 	has_paper_trail :on => [:update]
-  validates :surface_area, :unit_number, presence: true
+  # validates :surface_area, :unit_number, presence: true
+  validates :unit_number, presence: true
   # validates :unit_number, presence: true, format: { with: /\A\d+\z/, message: "only allows numbers" }
   # validates :unit_number, presence: true, numericality: {only_integer: true, greater_than: 0}
   # validate :unit_number_should_not_have_alphabets
