@@ -1,4 +1,5 @@
 class UnitFinancial < ApplicationRecord
+	has_paper_trail :on => [:update]
 	default_scope { order(created_at: :asc) }
 	validates :amount, numericality: { greater_than: 0 }
 	enum :frequency, %w(Monthly OneTime)
