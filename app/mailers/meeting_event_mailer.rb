@@ -4,6 +4,15 @@ class MeetingEventMailer < ApplicationMailer
 		@meeting = meeting
 		@association = association
 		subject = "New Meeting / Event Scheduled"
+
+    @meeting.event_attachments.each do |attachment|
+      attachments[attachment.filename.to_s] = {
+        mime_type: attachment.content_type,
+        content: attachment.download
+      }
+    rescue StandardError => e
+      Rails.logger.info "\e[31m **********Meeting skipped: #{e.message} \e[0m"
+    end
 		template_path = Rails.root.join(
       "app", "views", "meeting_event_mailer", "notify_admins_and_managers_when_create_meeting.html.erb"
     )

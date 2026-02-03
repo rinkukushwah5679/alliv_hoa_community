@@ -78,6 +78,12 @@
                   <%= @meeting.description %>
                 </p>
 
+                <% if @meeting.event_attachments.present? %>
+                  <p style="font-size:13px; color:#555; margin-top:10px;">
+                    <strong>📎 Attachments included in this email.</strong>
+                  </p>
+                <% end %>
+
                 <p style="font-size:13px; color:#777; margin-top:20px;">
                   This notification has been sent to all Unit Owners, Managers, Admin, and Board Members of the association.
                 </p>
