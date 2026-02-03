@@ -22,6 +22,7 @@ class UnityfiDepositAccount < ApplicationRecord
 
   validates :legal_business_name, :hoa_address_city, :hoa_address_state_or_region, :hoa_address_country, :primary_contact_first_name, :primary_contact_last_name, :additional_signers_location, :additional_signer_first_name, :additional_signer_last_name, format: {with: ONLY_STRING_REGEX, message: "only alphabets are allowed"}, allow_blank: true
 
+  before_save { self.primary_contact_email = primary_contact_email.to_s.downcase.presence }
   private
 
   def drivers_license_file_type

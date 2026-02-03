@@ -7,6 +7,9 @@ class OwnershipAccount < ApplicationRecord
 	belongs_to :user, class_name: "User", foreign_key: :unit_owner_id#, optional: true
 	before_create :set_association
 	before_update :disable_previous_owner_autopay, if: :will_save_change_to_unit_owner_id?
+	before_save { self.send_welcome_email = send_welcome_email.to_s.downcase.presence }
+	before_save { self.email = email.to_s.downcase.presence }
+	before_save { self.tenant_email = tenant_email.to_s.downcase.presence }
 
 	def set_association
 		self.association_id = unit.association_id
