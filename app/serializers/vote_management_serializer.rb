@@ -19,7 +19,7 @@ class VoteManagementSerializer < BaseSerializer
 
   attribute :is_voting_open do |object|
     if object.approval_due_date.present?
-      object.approval_due_date > Date.today
+      object.approval_due_date >= Date.today
     else
       true
     end

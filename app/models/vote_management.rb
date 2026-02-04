@@ -8,10 +8,17 @@ class VoteManagement < ApplicationRecord
 	belongs_to :custom_association, class_name: "Association", foreign_key: :association_id
 	has_many_attached :vote_management_attachments
 	has_many :vote_approvals, dependent: :destroy
-	validates :title, :ratification_type, presence: true
+	validates :title, :ratification_type, :start_date_time, :end_date_time, presence: true
+    validate :end_date_time_must_be_after_start_date_time
 	belongs_to :voting_rule
 	has_many :notifications, as: :notifiable, dependent: :destroy
 	before_create :set_auto_generate_id
+
+	def end_date_time_must_be_after_start_date_time
+	    return if start_date_time.blank? || end_date_time.blank?
+	    errors.add(:base, "End date must be after start date/time") if end_date_time <= start_date_time
+	end
+
 	def set_auto_generate_id
 		last_request_id = VoteManagement.unscoped.maximum(:auto_generate_id) || 1000
 		self.auto_generate_id = last_request_id + 1
