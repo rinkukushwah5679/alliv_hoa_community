@@ -89,21 +89,20 @@ module V1
 		def send_vote_management_notification(vote_management)
 			begin
 		    association_id = vote_management.association_id
-
+		    association = vote_management.custom_association
 		    # -------------------------------
 		    # Residents
 		    resident_ids = []
+		    manager_ids = []
 		    if vote_management.participant_category == "All Members"
 			    resident_ids = OwnershipAccount
 			      .where(association_id: association_id)
 			      .pluck(:unit_owner_id)
+			     # Community Managers
+			    manager_ids = CommunityAssociationManager
+			      .where(association_id: association_id)
+			      .pluck(:user_id)
 			  end
-
-		    # -------------------------------
-		    # Community Managers
-		    manager_ids = CommunityAssociationManager
-		      .where(association_id: association_id)
-		      .pluck(:user_id)
 
 		    # -------------------------------
 		    # Unique Users
@@ -119,6 +118,13 @@ module V1
 
 		        VotingMailer.vote_management_created(user, vote_management).deliver_later
 		      end
+		    board_members = association.board_members
+ 
+				board_members.each do |board_member|
+					setting = board_member.user_setting
+	        next if setting.present? && !setting.is_notification
+					VotingMailer.vote_management_created(board_member, vote_management).deliver_later
+				end
 		  rescue StandardError => e
 		    Rails.logger.error "*******VotingNotificationJob Error: #{e.message}"
 		  end

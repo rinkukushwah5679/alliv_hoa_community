@@ -19,8 +19,13 @@
         <strong><%= @vote_management.meeting_type %></strong>
       </p>
       <p>
-        Due Date:
-        <strong><%= @vote_management.approval_due_date.strftime("%m/%d/%Y") rescue "N/A" %></strong>
+        Start Date & Time:
+        <strong><%= @vote_management.start_date_time.strftime("%m/%d/%Y %I:%M %p") rescue "N/A" %></strong>
+      </p>
+
+      <p>
+        End Date & Time:
+        <strong><%= @vote_management.end_date_time.strftime("%m/%d/%Y %I:%M %p") rescue "N/A" %></strong>
       </p>
 
       <p style="font-size: 15px; color: #555; line-height: 1.6;">
