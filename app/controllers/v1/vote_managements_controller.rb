@@ -65,7 +65,12 @@ module V1
 		# Only for Resident or Board Member
 		def update_status
 			begin
-				return render json: {status: 422, success: false, data: nil, message: "Voting has closed"} if @vote_management.approval_due_date.present? && @vote_management.approval_due_date < Date.today
+				start_time = @vote_management.start_date_time
+   		  end_time   = @vote_management.end_date_time
+				# return render json: {status: 422, success: false, data: nil, message: "Voting has closed"} if @vote_management.approval_due_date.present? && @vote_management.approval_due_date < Date.today
+				return render json: { status: 422, success: false, message: "You cannot vote now" } if Time.now < start_time
+				return render json: { status: 422, success: false, message: "Voting has been closed" } if Time.now > end_time
+				return render json: {status: 422, success: false, data: nil, message: "Voting has closed"} unless Time.now.between?(start_time, end_time)
 				vote_approval = VoteApproval.find_or_initialize_by(user_id: current_user.id, vote_management_id: @vote_management.id)
 
 				if vote_approval.update(vote_approval_params)

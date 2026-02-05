@@ -1,5 +1,5 @@
 class VoteManagementDetailsSerializer < BaseSerializer
-  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :meeting_type, :category, :ratification_type, :title, :description, :approval_due_date ,:is_voting_open, :status, :updated_at
+  attributes :id, :auto_generate_id, :created_date, :created_by, :association_id, :association_name, :meeting_type, :category, :ratification_type, :title, :description, :approval_due_date, :is_voting_open, :status, :updated_at, :start_date_time, :end_date_time
 
   attribute :created_date do |object|
     if object.created_date.present?
@@ -17,11 +17,21 @@ class VoteManagementDetailsSerializer < BaseSerializer
     object.a_name rescue nil
   end
 
+  # attribute :is_voting_open do |object|
+  #   if object.approval_due_date.present?
+  #     object.approval_due_date > Date.today
+  #   else
+  #     true
+  #   end
+  # end
+
   attribute :is_voting_open do |object|
-    if object.approval_due_date.present?
-      object.approval_due_date > Date.today
-    else
+    start_time = object.start_date_time
+    end_time   = object.end_date_time
+    if start_time.blank? || end_time.blank?
       true
+    else
+      Time.now.between?(start_time, end_time)
     end
   end
 
