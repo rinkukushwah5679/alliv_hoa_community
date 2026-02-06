@@ -131,8 +131,8 @@ module V1
 		  begin
 		    units = []
 
-		    # Step 1: Units fetch karo
-		    if params[:unit_id].present?
+		    # Step 1: Units fetch
+		    if params[:unit_id].present? && params[:unit_id] != "undefined"
 		      units = [params[:unit_id]]
 		    else
 		      units = current_user.transactions
@@ -150,7 +150,7 @@ module V1
 		      message: "No transaction found for autopay"
 		    } if units.blank?
 
-		    # Step 2: Current user ke selected units ke autopays
+		    # Step 2: Autopays of Current user
 		    autos = UnitAutopay.where(user_id: current_user.id)
 
 		    # Step 3: Agar koi autopay record hi nahi hai → Create + Enable
