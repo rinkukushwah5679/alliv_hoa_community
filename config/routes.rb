@@ -31,7 +31,7 @@ Rails.application.routes.draw do
       resources :walkthroughs
       resources :units, except: [:create] do
         get :unit_history, on: :member
-        post :autopay_enabled, on: :member
+        post :autopay_enabled, on: :collection
         post :import , on: :collection
       end
       resources :expense_thresholds, :only => [:index, :show, :update, :destroy]

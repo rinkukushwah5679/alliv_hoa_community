@@ -8,6 +8,7 @@ class User < ApplicationRecord
   scope :property_owners, -> { with_role(:PropertyOwner) }
   belongs_to :custom_association, class_name: "Association", foreign_key: :association_id, optional: true
   has_many :walkthroughs, class_name: "Walkthrough", foreign_key: :created_by, dependent: :destroy
+  has_many :transactions
   def full_name
     "#{first_name} #{last_name}".strip
   end

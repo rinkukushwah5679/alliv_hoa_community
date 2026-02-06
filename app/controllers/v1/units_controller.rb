@@ -2,7 +2,7 @@ module V1
 	class UnitsController < ApplicationController
 		# before_action :set_user
 		# before_action :set_association#, only: [:index, :show, :update, :destroy]
-		before_action :set_unit, only: [:show, :update, :destroy, :unit_history, :autopay_enabled]
+		before_action :set_unit, only: [:show, :update, :destroy, :unit_history]
 		def index
 			begin
 
@@ -89,43 +89,122 @@ module V1
 			render json: {status: 200, success: true, data: HistoriesSerializer.new(@unit.versions).serializable_hash[:data], message: "User History"}
 		end
 
-		def autopay_enabled
-			begin
-				# it's will be set and remove on payment gateway
-				auto = UnitAutopay.find_or_initialize_by(unit_id: @unit.id, user_id: current_user.id)
-				if auto.persisted? && auto.is_active?
-					# Already active, so disable it
-					auto.is_active = false
-					message = "Autopay disabled successfully"
-				else
-					payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
-					# return render json: {status: 422, success: false, data: nil, message: "Please choose bank account"} unless params[:payment_method_id].present?
-					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
-					# Either new record or inactive, so enable it
-					auto.is_active = true
-					auto.amount = params[:amount] if params[:amount].present?
-					auto.payment_method_id = params[:payment_method_id] if payment_method.present? #this is bank id
-					# auto.bank_account_id = params[:bank_account_id] if params[:bank_account_id].present? #Removed thid column bank_account_id
-					# auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
-					auto.total_dues = params[:total_dues]
-					auto.convenience_fee = params[:ach_convenience_fee]
-					auto.total_amount = params[:total_amount]
-					auto.unityfi_ach_monthly_fee = params[:unityfi_ach_monthly_fee]
-					auto.association_due_id = params[:association_due_id]
-					auto.due_date = params[:due_date]
-					auto.community_convenience_fee = (auto.convenience_fee.to_f - auto.unityfi_ach_monthly_fee.to_f).round(2)
-					message = "Autopay enabled successfully"
-				end
+		# def autopay_enabled
+		# 	begin
+		# 		# it's will be set and remove on payment gateway
+		# 		auto = UnitAutopay.find_or_initialize_by(unit_id: @unit.id, user_id: current_user.id)
+		# 		if auto.persisted? && auto.is_active?
+		# 			# Already active, so disable it
+		# 			auto.is_active = false
+		# 			message = "Autopay disabled successfully"
+		# 		else
+		# 			payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+		# 			# return render json: {status: 422, success: false, data: nil, message: "Please choose bank account"} unless params[:payment_method_id].present?
+		# 			return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+		# 			# Either new record or inactive, so enable it
+		# 			auto.is_active = true
+		# 			auto.amount = params[:amount] if params[:amount].present?
+		# 			auto.payment_method_id = params[:payment_method_id] if payment_method.present? #this is bank id
+		# 			# auto.bank_account_id = params[:bank_account_id] if params[:bank_account_id].present? #Removed thid column bank_account_id
+		# 			# auto.card_ach_fee = params[:card_ach_fee] if params[:card_ach_fee].present?
+		# 			auto.total_dues = params[:total_dues]
+		# 			auto.convenience_fee = params[:ach_convenience_fee]
+		# 			auto.total_amount = params[:total_amount]
+		# 			auto.unityfi_ach_monthly_fee = params[:unityfi_ach_monthly_fee]
+		# 			auto.association_due_id = params[:association_due_id]
+		# 			auto.due_date = params[:due_date]
+		# 			auto.community_convenience_fee = (auto.convenience_fee.to_f - auto.unityfi_ach_monthly_fee.to_f).round(2)
+		# 			message = "Autopay enabled successfully"
+		# 		end
 
-				if auto.save
-					render json: {status: 200, success: true, data: nil, message: message}
-				else
-					render json: {status: 422, success: false, data: nil, message: auto.errors.full_messages.join(", ")}
+		# 		if auto.save
+		# 			render json: {status: 200, success: true, data: nil, message: message}
+		# 		else
+		# 			render json: {status: 422, success: false, data: nil, message: auto.errors.full_messages.join(", ")}
+		# 		end
+		# 	rescue StandardError => e
+		# 		render json: {status: 500, success: false, data: nil, message: e.message }
+		# 	end
+		# end
+
+		def autopay_enabled
+		  begin
+		    units = []
+
+		    # Step 1: Units fetch karo
+		    if params[:unit_id].present?
+		      units = [params[:unit_id]]
+		    else
+		      units = current_user.transactions
+				            .joins("INNER JOIN units as u on u.id = transactions.unit_id AND u.deleted_at IS NULL")
+				            .where(is_paid: false)
+				            .where("transaction_date >= ?", Date.today)
+				            .where(transaction_type: "Upcoming monthly due")
+				            .pluck(:unit_id)
+				            .uniq
+		    end
+
+		    return render json: {
+		      status: 422,
+		      success: false,
+		      message: "No transaction found for autopay"
+		    } if units.blank?
+
+		    # Step 2: Current user ke selected units ke autopays
+		    autos = UnitAutopay.where(user_id: current_user.id)
+
+		    # Step 3: Agar koi autopay record hi nahi hai → Create + Enable
+		    if autos.blank?
+					payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+						units.each do |unit_id|
+						unit  = Unit.find_by(id: unit_id)
+						next unless unit.present?
+		        UnitAutopay.create!(
+		          user_id: current_user.id,
+		          unit_id: unit_id,
+		          is_active: true
+		        )
+		      end
+
+		      return render json: {tatus: 200, success: true, message: "Autopay enabled successfully"}
+		    end
+
+		    # Step 4: Check if any active
+		    any_active = autos.where(is_active: true).exists?
+
+		    # Step 5: Toggle All
+		    if any_active
+		      autos.update_all(is_active: false)
+		      message = "Autopay disabled successfully"
+		    else
+					units.each do |unit_id|
+					unit  = Unit.find_by(id: unit_id)
+					next unless unit.present?
+					UnitAutopay.create!(user_id: current_user.id, unit_id: unit_id, is_active: true) unless UnitAutopay.where(user_id: current_user.id, unit_id: unit_id).last.present?
 				end
-			rescue StandardError => e
-				render json: {status: 500, success: false, data: nil, message: e.message }
-			end
+				  payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+		      autos.update_all(is_active: true)
+		      message = "Autopay enabled successfully"
+		    end
+
+		    # Step 6: Response
+		    render json: {
+		      status: 200,
+		      success: true,
+		      message: message
+		    }
+
+		  rescue StandardError => e
+		    render json: {
+		      status: 500,
+		      success: false,
+		      message: e.message
+		    }
+		  end
 		end
+
 
 		def import
 			begin
