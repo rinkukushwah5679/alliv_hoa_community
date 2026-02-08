@@ -167,7 +167,7 @@ module V1
 		        )
 		      end
 
-		      return render json: {tatus: 200, success: true, message: "Autopay enabled successfully"}
+		      return render json: {status: 200, success: true, message: "Autopay enabled successfully"}
 		    end
 
 		    # Step 4: Check if any active
@@ -178,13 +178,13 @@ module V1
 		      autos.update_all(is_active: false)
 		      message = "Autopay disabled successfully"
 		    else
-					units.each do |unit_id|
-					unit  = Unit.find_by(id: unit_id)
-					next unless unit.present?
-					UnitAutopay.create!(user_id: current_user.id, unit_id: unit_id, is_active: true) unless UnitAutopay.where(user_id: current_user.id, unit_id: unit_id).last.present?
-				end
 				  payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
 					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+					units.each do |unit_id|
+						unit  = Unit.find_by(id: unit_id)
+						next unless unit.present?
+						UnitAutopay.create!(user_id: current_user.id, unit_id: unit_id, is_active: true) unless UnitAutopay.where(user_id: current_user.id, unit_id: unit_id).last.present?
+					end
 		      autos.update_all(is_active: true)
 		      message = "Autopay enabled successfully"
 		    end
