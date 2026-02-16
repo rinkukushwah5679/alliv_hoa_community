@@ -1,0 +1,2 @@
+class AgentFlow < ApplicationRecord
+end
