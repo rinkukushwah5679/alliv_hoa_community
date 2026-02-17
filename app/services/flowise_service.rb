@@ -1,37 +1,37 @@
 class FlowiseService
 
+  # def create_document_store(association)
+  # 	begin
+	#   	require "uri"
+	# 		require "json"
+	# 		require "net/http"
+
+	# 		url = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/store")
+
+	# 		http = Net::HTTP.new(url.host, url.port);
+	# 		request = Net::HTTP::Post.new(url)
+	# 		request["Content-Type"] = "application/json"
+	# 		request["Authorization"] = "Bearer #{ENV["FLOWISE_KEY"]}"
+	# 		request.body = JSON.dump({
+	# 		  "name": "#{association.id}-#{association&.name&.downcase}",
+	# 		  "description": "Store for internal documents"
+	# 		})
+
+	# 		response = http.request(request)
+	# 		data = JSON.parse(response.read_body)
+	# 		if response.code == "200"
+	# 			association.update(flowise_document_store_id: data["id"])
+	# 		else
+	# 			puts response.read_body
+	# 			Rails.logger.info "*******Folder creation error #{data['message']} *******"
+	# 		end
+  # 	rescue StandardError => e
+	# 		Rails.logger.info "******* #{e.message} *******"
+  # 	end
+  # end
+
+
   def create_document_store(association)
-  	begin
-	  	require "uri"
-			require "json"
-			require "net/http"
-
-			url = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/store")
-
-			http = Net::HTTP.new(url.host, url.port);
-			request = Net::HTTP::Post.new(url)
-			request["Content-Type"] = "application/json"
-			request["Authorization"] = "Bearer #{ENV["FLOWISE_KEY"]}"
-			request.body = JSON.dump({
-			  "name": "#{association.id}-#{association&.name&.downcase}",
-			  "description": "Store for internal documents"
-			})
-
-			response = http.request(request)
-			data = JSON.parse(response.read_body)
-			if response.code == "200"
-				association.update(flowise_document_store_id: data["id"])
-			else
-				puts response.read_body
-				Rails.logger.info "*******Folder creation error #{data['message']} *******"
-			end
-  	rescue StandardError => e
-			Rails.logger.info "******* #{e.message} *******"
-  	end
-  end
-
-
-  def created_document(association)
   	begin
 	  	payload = {
 			  name: "#{association.name}_#{association.id}",
@@ -62,7 +62,7 @@ class FlowiseService
 			 
 			result = JSON.parse(response.body)
 			document_store_id = result['id']
-			 
+			Rails.logger.info "\e[31m Created folder******* #{document_store_id} ******* \e[0m"
 			 
 			test_file_path = Rails.root.join("public", "test.pdf")
 			raise "Missing test file at #{test_file_path}" unless File.exist?(test_file_path)
@@ -97,7 +97,7 @@ class FlowiseService
 			add_form_field(post_body, boundary, "vectorStore", {
 			  name: "pinecone",
 			  config: {
-			    pineconeIndex: "alliv4",
+			    pineconeIndex: "alliv3",
 			    pineconeNamespace: "#{association.name.parameterize}-#{association.id}",
 			    topK: "5",
 			    searchType: "similarity",
@@ -149,7 +149,7 @@ class FlowiseService
 			template_file = Rails.root.join("public", "template.json")
 			template = JSON.parse(File.read(template_file))
 			 
-			template["nodes"][1]["data"]["inputs"]["agentModelConfig"]["FLOWISE_CREDENTIAL_ID"] = "24041b2d-1e7d-415f-9eb3-5823926c5497"
+			template["nodes"][1]["data"]["inputs"]["agentModelConfig"]["FLOWISE_CREDENTIAL_ID"] = "#{ENV['FLOWISE_CREDENTIAL_ID']}"
 			    template["nodes"][1]["data"]["inputs"]["agentKnowledgeDocumentStores"].map! do |store|
 			      store["documentStore"] = "#{document_store_id}:#{association.name.parameterize}_#{association.id}"
 			      store["docStoreDescription"] = "Agent Flow"

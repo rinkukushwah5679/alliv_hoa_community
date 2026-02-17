@@ -43,7 +43,7 @@ class Association < ApplicationRecord
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
-  after_create :create_user_on_unityfi# :create_stripe_account_id, :create_folder_on_flowise
+  after_create :create_user_on_unityfi#, :create_folder_on_flowise #, :create_stripe_account_id
   before_save :set_email_in_downcase
   # def status
   #   is_active ? "Active" : "Inactive"
