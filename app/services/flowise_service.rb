@@ -209,59 +209,59 @@ class FlowiseService
 	    # 5. Delete Test File (Loader + Pinecone)
 	    # --------------------------
 
-	    if document_store_id
-	      begin
-	        store_data = fetch_loader_metadata_from_flowise(document_store_id)
-	        first_entry = store_data.first
+	    # if document_store_id
+	    #   begin
+	    #     store_data = fetch_loader_metadata_from_flowise(document_store_id)
+	    #     first_entry = store_data.first
 
-	        loader_id  = first_entry[:loader_id]
-	        file_id    = first_entry[:file_id]
-	        namespace  = first_entry[:pinecone_namespace]
+	    #     loader_id  = first_entry[:loader_id]
+	    #     file_id    = first_entry[:file_id]
+	    #     namespace  = first_entry[:pinecone_namespace]
 
-	        uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/loader/#{document_store_id}/#{loader_id}")
-	        Rails.logger.info("Deleting loader #{loader_id} from store #{document_store_id} with namespace #{namespace}")
+	    #     uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/loader/#{document_store_id}/#{loader_id}")
+	    #     Rails.logger.info("Deleting loader #{loader_id} from store #{document_store_id} with namespace #{namespace}")
 
-	        http = Net::HTTP.new(uri.host, uri.port)
-	        http.use_ssl = (uri.scheme == 'https')
+	    #     http = Net::HTTP.new(uri.host, uri.port)
+	    #     http.use_ssl = (uri.scheme == 'https')
 
-	        request = Net::HTTP::Delete.new(uri)
-	        request['Authorization'] = "Bearer #{ENV['FLOWISE_KEY']}"
-	        request['Accept'] = '*/*'
+	    #     request = Net::HTTP::Delete.new(uri)
+	    #     request['Authorization'] = "Bearer #{ENV['FLOWISE_KEY']}"
+	    #     request['Accept'] = '*/*'
 
-	        response = http.request(request)
+	    #     response = http.request(request)
 
-	        if response.is_a?(Net::HTTPSuccess)
-	          # Delete vectors from Pinecone
-	          uri = URI('https://alliv3-l24imh9.svc.aped-4627-b74a.pinecone.io/vectors/delete')
-	          http = Net::HTTP.new(uri.host, uri.port)
-	          http.use_ssl = true
+	    #     if response.is_a?(Net::HTTPSuccess)
+	    #       # Delete vectors from Pinecone
+	    #       uri = URI('https://alliv3-l24imh9.svc.aped-4627-b74a.pinecone.io/vectors/delete')
+	    #       http = Net::HTTP.new(uri.host, uri.port)
+	    #       http.use_ssl = true
 
-	          request = Net::HTTP::Post.new(uri)
-	          request['Api-Key'] = ENV["PINECONE_API_KEY"]
-	          request['Content-Type'] = 'application/json'
-	          request['X-Pinecone-API-Version'] = '2025-04'
+	    #       request = Net::HTTP::Post.new(uri)
+	    #       request['Api-Key'] = ENV["PINECONE_API_KEY"]
+	    #       request['Content-Type'] = 'application/json'
+	    #       request['X-Pinecone-API-Version'] = '2025-04'
 
-	          body = {
-	            filter: { fileId: { '$eq': file_id } },
-	            namespace: namespace
-	          }
+	    #       body = {
+	    #         filter: { fileId: { '$eq': file_id } },
+	    #         namespace: namespace
+	    #       }
 
-	          request.body = body.to_json
-	          response = http.request(request)
+	    #       request.body = body.to_json
+	    #       response = http.request(request)
 
-	          if response.is_a?(Net::HTTPSuccess)
-	            Rails.logger.info("Loader #{loader_id} and Pinecone vectors deleted successfully from namespace #{namespace}")
-	          else
-	            Rails.logger.warn("Loader deleted in Flowise but failed in Pinecone: #{response.body}")
-	          end
-	        else
-	          Rails.logger.error("Failed to delete loader #{loader_id}. Status: #{response.code}, Body: #{response.body}")
-	        end
-	      rescue => e
-	        Rails.logger.error("Error deleting loader: #{e.message}")
-	        Rails.logger.error(e.backtrace.join("\n"))
-	      end
-	    end
+	    #       if response.is_a?(Net::HTTPSuccess)
+	    #         Rails.logger.info("Loader #{loader_id} and Pinecone vectors deleted successfully from namespace #{namespace}")
+	    #       else
+	    #         Rails.logger.warn("Loader deleted in Flowise but failed in Pinecone: #{response.body}")
+	    #       end
+	    #     else
+	    #       Rails.logger.error("Failed to delete loader #{loader_id}. Status: #{response.code}, Body: #{response.body}")
+	    #     end
+	    #   rescue => e
+	    #     Rails.logger.error("Error deleting loader: #{e.message}")
+	    #     Rails.logger.error(e.backtrace.join("\n"))
+	    #   end
+	    # end
 
 			# --------------------------
 	    # 6. Save to local DB
