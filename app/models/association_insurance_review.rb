@@ -1,0 +1,2 @@
+class AssociationInsuranceReview < ApplicationRecord
+end

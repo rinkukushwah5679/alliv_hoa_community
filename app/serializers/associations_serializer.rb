@@ -1,6 +1,9 @@
 class AssociationsSerializer < BaseSerializer
   attributes :id, :company_id, :company_name, :location_user_id, :is_payout_enabled, :name, :telephone_no, :email, :is_active, :status, :web_url, :created_at, :updated_at
 
+  attribute :agent_flow do |obj|
+    obj.agent_flow rescue nil
+  end
   attribute :company_name do |object, params|
     if params[:is_new_record].present? && params[:is_new_record] == "true"
       company = Company.find object.company_id

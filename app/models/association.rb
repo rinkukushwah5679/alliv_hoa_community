@@ -11,6 +11,7 @@ class Association < ApplicationRecord
   has_many :association_dues, dependent: :destroy
   has_one :association_late_payment_fee, dependent: :destroy
   has_one :tax_information, dependent: :destroy
+  has_one :agent_flow, dependent: :destroy
   has_many :community_association_managers, dependent: :destroy
   has_many :units, dependent: :destroy
   # has_many :special_assesments, dependent: :destroy
@@ -43,7 +44,7 @@ class Association < ApplicationRecord
   validate :validate_units_limit
   enum :status, { Active: "Active", InActive: "InActive"}
   before_save :set_is_active_flag, if: :will_save_change_to_status?
-  after_create :create_user_on_unityfi#, :create_folder_on_flowise #, :create_stripe_account_id
+  after_create :create_user_on_unityfi, :create_folder_on_flowise #, :create_stripe_account_id
   before_save :set_email_in_downcase
   # def status
   #   is_active ? "Active" : "Inactive"

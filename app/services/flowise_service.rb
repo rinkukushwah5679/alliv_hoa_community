@@ -204,17 +204,76 @@ class FlowiseService
 			flow_response = http.request(request)
 			 
 			flow_id = JSON.parse(flow_response.body)["id"]
+
+			# --------------------------
+	    # 5. Delete Test File (Loader + Pinecone)
+	    # --------------------------
+
+	    if document_store_id
+	      begin
+	        store_data = fetch_loader_metadata_from_flowise(document_store_id)
+	        first_entry = store_data.first
+
+	        loader_id  = first_entry[:loader_id]
+	        file_id    = first_entry[:file_id]
+	        namespace  = first_entry[:pinecone_namespace]
+
+	        uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/loader/#{document_store_id}/#{loader_id}")
+	        Rails.logger.info("Deleting loader #{loader_id} from store #{document_store_id} with namespace #{namespace}")
+
+	        http = Net::HTTP.new(uri.host, uri.port)
+	        http.use_ssl = (uri.scheme == 'https')
+
+	        request = Net::HTTP::Delete.new(uri)
+	        request['Authorization'] = "Bearer #{ENV['FLOWISE_KEY']}"
+	        request['Accept'] = '*/*'
+
+	        response = http.request(request)
+
+	        if response.is_a?(Net::HTTPSuccess)
+	          # Delete vectors from Pinecone
+	          uri = URI('https://alliv3-l24imh9.svc.aped-4627-b74a.pinecone.io/vectors/delete')
+	          http = Net::HTTP.new(uri.host, uri.port)
+	          http.use_ssl = true
+
+	          request = Net::HTTP::Post.new(uri)
+	          request['Api-Key'] = ENV["PINECONE_API_KEY"]
+	          request['Content-Type'] = 'application/json'
+	          request['X-Pinecone-API-Version'] = '2025-04'
+
+	          body = {
+	            filter: { fileId: { '$eq': file_id } },
+	            namespace: namespace
+	          }
+
+	          request.body = body.to_json
+	          response = http.request(request)
+
+	          if response.is_a?(Net::HTTPSuccess)
+	            Rails.logger.info("Loader #{loader_id} and Pinecone vectors deleted successfully from namespace #{namespace}")
+	          else
+	            Rails.logger.warn("Loader deleted in Flowise but failed in Pinecone: #{response.body}")
+	          end
+	        else
+	          Rails.logger.error("Failed to delete loader #{loader_id}. Status: #{response.code}, Body: #{response.body}")
+	        end
+	      rescue => e
+	        Rails.logger.error("Error deleting loader: #{e.message}")
+	        Rails.logger.error(e.backtrace.join("\n"))
+	      end
+	    end
+
 			# --------------------------
 	    # 6. Save to local DB
 	    # --------------------------
-			AgentFlow.create(
-			  name: "#{association&.name&.parameterize}_#{association.id}",
-			  user_id: association.property_manager_id,
-			  description: "Agent Flow",
-			  flow_id: flow_id
-			)
+	    agent_flow = AgentFlow.find_or_initialize_by(association_id: association.id)
+	    agent_flow.name = "#{association&.name&.parameterize}_#{association.id}"
+	    agent_flow.user_id = association.property_manager_id
+	    agent_flow.description = "Agent Flow"
+	    agent_flow.flowise_document_store_id = document_store_id
+	    agent_flow.flow_id = flow_id
+	    agent_flow.save
 
-			association.update(flowise_document_store_id: document_store_id, flow_id: flow_id)
 		rescue StandardError => e
   		Rails.logger.info "\e[31m ******* #{e.message} ******* \e[0m"
   	end
@@ -265,6 +324,38 @@ class FlowiseService
 	#     file.close if file && !file.closed?
 	#   end
 	# end
+
+	def fetch_loader_metadata_from_flowise(store_id)
+    uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/store/#{store_id}")
+    request = Net::HTTP::Get.new(uri)
+    request['Authorization'] = "Bearer #{ENV['FLOWISE_KEY']}"
+    request['Accept'] = '*/*'
+    request['Content-Type'] = 'application/json'
+
+    response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      http.request(request)
+    end
+
+    return { error: 'Failed to fetch from Flowise', status: response.code } unless response.is_a?(Net::HTTPSuccess)
+
+    json = JSON.parse(response.body)
+    loaders = json['loaders'] || []
+    pinecone_namespace = json.dig("vectorStoreConfig", "config", "pineconeNamespace")
+    # Format only loader metadata
+    loaders.map do |loader|
+      metadata = loader.dig('loaderConfig', 'metadata') || {}
+      {
+        loader_id: loader['id'],
+        loader_name: loader['loaderName'],
+        file_id: metadata['fileId'],
+        file_name: metadata['fileName'],
+        uploaded_by: metadata['uploadedBy'],
+        splitter: metadata['splitter'],
+        timestamp: metadata['timestamp'],
+        pinecone_namespace: pinecone_namespace,
+      }
+    end
+  end
 
 
 end
