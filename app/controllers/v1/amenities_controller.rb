@@ -178,7 +178,7 @@ module V1
 				amenities = amenities.where(participants: "All Members")
 			end
 			amenities = amenities.joins("INNER JOIN associations ON associations.id = amenities.association_id")
-
+			amenities = amenities.where(participants: params[:participants]) if params[:participants].present?
 			if params[:search].present?
 				search_term = "%#{params[:search].strip}%"
 

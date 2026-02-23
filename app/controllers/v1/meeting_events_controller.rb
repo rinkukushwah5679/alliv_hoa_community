@@ -158,7 +158,11 @@ module V1
 				meetings = meetings.where(participants: "All Members")
 			end
 			meetings = meetings.joins("INNER JOIN associations ON associations.id = meeting_events.association_id")
-
+			conditions = {}
+			conditions[:participants] = params[:participants] if params[:participants].present?
+			conditions[:meeting_type] = params[:meeting_type] if params[:meeting_type].present?
+			conditions[:location] = params[:location] if params[:location].present?
+			meetings = meetings.where(conditions)
 			if params[:search].present?
 				search_term = "%#{params[:search]}%"
 
