@@ -33,8 +33,9 @@ class FlowiseService
 
   def create_document_store(association)
   	begin
+			association_name_id = "#{association.name.parameterize}_#{association.id}"[0, 64]
 	  	payload = {
-			  name: "#{association.name}_#{association.id}",
+			  name: association_name_id,
 			  description: "Store for internal documentse",
 			  loaders: '[]',
 			  whereUsed: '[]',
@@ -97,8 +98,8 @@ class FlowiseService
 			add_form_field(post_body, boundary, "vectorStore", {
 			  name: "pinecone",
 			  config: {
-			    pineconeIndex: "alliv3",
-			    pineconeNamespace: "#{association.name.parameterize}-#{association.id}",
+			    pineconeIndex: "alliv-solutions",
+			    pineconeNamespace: association_name_id,
 			    topK: "5",
 			    searchType: "similarity",
 			    credential: "#{ENV['PINECONE_CREDENTIAL_ID']}"
@@ -143,7 +144,7 @@ class FlowiseService
 			 
 			parsed_upload = JSON.parse(upload_response.body) rescue {}
 			loader_id = parsed_upload.dig("data", "id") || parsed_upload["loaderId"] || nil
-			namespace = "#{association.name.parameterize}-#{association.id}"
+			# namespace = association_name_id
 			  
 
 			template_file = Rails.root.join("public", "template.json")
@@ -151,7 +152,7 @@ class FlowiseService
 			 
 			template["nodes"][1]["data"]["inputs"]["agentModelConfig"]["FLOWISE_CREDENTIAL_ID"] = "#{ENV['FLOWISE_CREDENTIAL_ID']}"
 			    template["nodes"][1]["data"]["inputs"]["agentKnowledgeDocumentStores"].map! do |store|
-			      store["documentStore"] = "#{document_store_id}:#{association.name.parameterize}_#{association.id}"
+			      store["documentStore"] = "#{document_store_id}:#{association_name_id}"
 			      store["docStoreDescription"] = "Agent Flow"
 			      store
 			    end
@@ -181,7 +182,7 @@ class FlowiseService
 			# 4. Create Flowise Agent Flow
 			 
 			flow_payload = {
-			  name: "#{association.name.parameterize}_#{association.id}",
+			  name: association_name_id,
 			  description: "Agent Flow",
 			  type: "AGENTFLOW",
 			  deployed: true,
@@ -267,7 +268,7 @@ class FlowiseService
 	    # 6. Save to local DB
 	    # --------------------------
 	    agent_flow = AgentFlow.find_or_initialize_by(association_id: association.id)
-	    agent_flow.name = "#{association&.name&.parameterize}_#{association.id}"
+	    agent_flow.name = association_name_id
 	    agent_flow.user_id = association.property_manager_id
 	    agent_flow.description = "Agent Flow"
 	    agent_flow.flowise_document_store_id = document_store_id
