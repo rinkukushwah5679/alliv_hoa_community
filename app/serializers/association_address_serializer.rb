@@ -1,5 +1,5 @@
 class AssociationAddressSerializer < BaseSerializer
-  attributes :id, :street, :building_no, :city, :state, :zip_code, :created_at, :updated_at
+  attributes :id, :street_number, :street, :building_no, :city, :state, :zip_code, :created_at, :updated_at
 
   attribute :created_by do |object|
     creator = object.creator

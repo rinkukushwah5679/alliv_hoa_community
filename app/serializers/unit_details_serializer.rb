@@ -1,5 +1,5 @@
 class UnitDetailsSerializer < BaseSerializer
-	attributes :id, :name, :late_penalty_fee_text, :dues_or_balance, :formatted_dues_or_balance, :status, :association_id, :association_name, :state, :city, :zip_code, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
+	attributes :id, :name, :late_penalty_fee_text, :dues_or_balance, :formatted_dues_or_balance, :status, :association_id, :association_name, :state, :city, :zip_code, :street_number, :street, :building_no, :floor, :unit_bedrooms, :unit_bathrooms, :surface_area, :unit_number, :address, :bathrooms, :area, :allocation
 
 	attribute :association_name do |object|
 		object&.custom_association&.name rescue nil
