@@ -47,7 +47,7 @@ class FlowiseService
 			 
 			url = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/store")
 			http = Net::HTTP.new(url.host, url.port)
-			 
+			http.use_ssl = (url.scheme == 'https')
 			request = Net::HTTP::Post.new(url.path, {
 			  'Authorization' => "Bearer #{ENV['FLOWISE_KEY']}",
 			  'Content-Type' => 'application/json'
@@ -136,6 +136,7 @@ class FlowiseService
 			request["Content-Type"] = "multipart/form-data; boundary=#{boundary}"
 			request.body = post_body.join
 			http = Net::HTTP.new(url.host, url.port)
+			http.use_ssl = (url.scheme == 'https')
 			http.open_timeout = 120    # seconds
 			http.read_timeout = 600
 			upload_response = http.request(request)
@@ -197,7 +198,8 @@ class FlowiseService
 			 
 			uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/chatflows")
 			http = Net::HTTP.new(uri.host, uri.port)
-			 
+			http.use_ssl = (uri.scheme == 'https')
+
 			request = Net::HTTP::Post.new(uri.path, {
 			  "Authorization" => "Bearer #{ENV['FLOWISE_KEY']}",
 			  "Content-Type" => "application/json"
@@ -222,7 +224,7 @@ class FlowiseService
 
 	    #     uri = URI("#{ENV['FLOWISE_SERVER_URL']}/api/v1/document-store/loader/#{document_store_id}/#{loader_id}")
 	    #     Rails.logger.info("Deleting loader #{loader_id} from store #{document_store_id} with namespace #{namespace}")
-
+	    			# http.use_ssl = (uri.scheme == 'https')
 	    #     http = Net::HTTP.new(uri.host, uri.port)
 	    #     http.use_ssl = (uri.scheme == 'https')
 
@@ -234,7 +236,7 @@ class FlowiseService
 
 	    #     if response.is_a?(Net::HTTPSuccess)
 	    #       # Delete vectors from Pinecone
-	    #       uri = URI('https://alliv3-l24imh9.svc.aped-4627-b74a.pinecone.io/vectors/delete')
+	    #       uri = URI('https://alliv-solutions-808ejv6.svc.aped-4627-b74a.pinecone.io/vectors/delete')
 	    #       http = Net::HTTP.new(uri.host, uri.port)
 	    #       http.use_ssl = true
 
@@ -334,7 +336,7 @@ class FlowiseService
     request['Accept'] = '*/*'
     request['Content-Type'] = 'application/json'
 
-    response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(request)
     end
 
