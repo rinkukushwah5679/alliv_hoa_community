@@ -68,6 +68,7 @@ class FlowiseService
 			test_file_path = Rails.root.join("public", "test.pdf")
 			raise "Missing test file at #{test_file_path}" unless File.exist?(test_file_path)
 
+
 			 
 			file = File.open(test_file_path, "rb")
 			safe_filename = "test.pdf"
