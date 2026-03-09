@@ -150,51 +150,59 @@ module V1
 		      message: "No transaction found for autopay"
 		    } if units.blank?
 
+		    payment_method = current_user&.primary_bank_account
+				return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+				return render json: {status: 422, success: false, data: nil, message: "Please select bank account"} unless params[:payment_method_id].present?
+				payment_method = BankAccount.find_by(id: params[:payment_method_id])
+				return render json: {status: 422, success: false, data: nil, message: "Bank account not found"} unless payment_method.present?
+
 		    # Step 2: Autopays of Current user
 		    autos = UnitAutopay.where(user_id: current_user.id)
-
-		    # Step 3: Agar koi autopay record hi nahi hai → Create + Enable
-		    if autos.blank?
-					payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
-					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
-						units.each do |unit_id|
+				if autos.present?
+					autos.update_all(is_active: false)
+				end
+		    # Step 3: If no autopay record exists, create it and enable it.
+		    # if autos.blank?
+					# payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+					units.each do |unit_id|
 						unit  = Unit.find_by(id: unit_id)
 						next unless unit.present?
 		        UnitAutopay.create!(
 		          user_id: current_user.id,
 		          unit_id: unit_id,
-		          is_active: true
+		          is_active: true,
+		          payment_method_id: params[:payment_method_id]
 		        )
 		      end
 
 		      return render json: {status: 200, success: true, message: "Autopay enabled successfully"}
-		    end
+		    # end
 
 		    # Step 4: Check if any active
-		    any_active = autos.where(is_active: true).exists?
+		    # any_active = autos.where(is_active: true).exists?
 
-		    # Step 5: Toggle All
-		    if any_active
-		      autos.update_all(is_active: false)
-		      message = "Autopay disabled successfully"
-		    else
-				  payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
-					return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
-					units.each do |unit_id|
-						unit  = Unit.find_by(id: unit_id)
-						next unless unit.present?
-						UnitAutopay.create!(user_id: current_user.id, unit_id: unit_id, is_active: true) unless UnitAutopay.where(user_id: current_user.id, unit_id: unit_id).last.present?
-					end
-		      autos.update_all(is_active: true)
-		      message = "Autopay enabled successfully"
-		    end
+		    # # Step 5: Toggle All
+		    # if any_active
+		    #   autos.update_all(is_active: false)
+		    #   message = "Autopay disabled successfully"
+		    # else
+				#   payment_method = BankAccount.find_by(id: params[:payment_method_id]) || current_user&.primary_bank_account
+				# 	return render json: {status: 422, success: false, data: nil, message: "There is not any bank accounts, please add bank account for set autopay"} unless payment_method.present?
+				# 	units.each do |unit_id|
+				# 		unit  = Unit.find_by(id: unit_id)
+				# 		next unless unit.present?
+				# 		UnitAutopay.create!(user_id: current_user.id, unit_id: unit_id, is_active: true) unless UnitAutopay.where(user_id: current_user.id, unit_id: unit_id).last.present?
+				# 	end
+		    #   autos.update_all(is_active: true)
+		    #   message = "Autopay enabled successfully"
+		    # end
 
-		    # Step 6: Response
-		    render json: {
-		      status: 200,
-		      success: true,
-		      message: message
-		    }
+		    # # Step 6: Response
+		    # render json: {
+		    #   status: 200,
+		    #   success: true,
+		    #   message: message
+		    # }
 
 		  rescue StandardError => e
 		    render json: {
