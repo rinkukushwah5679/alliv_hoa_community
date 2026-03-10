@@ -119,7 +119,7 @@ class Unit < ApplicationRecord
         user_id: ownership_account.unit_owner_id, #id of resident 
         unit_id: self.id,
         payment_month: payment_month_str,
-        status: ["success", "credit_awaiting", "credit_success", "payment_awaiting", "payment_failed"],
+        status: ["success", "credit_awaiting", "credit_success", "payment_awaiting", "credit_failed"],
         association_due_id: association_due.id
       )
       next if already_paid
