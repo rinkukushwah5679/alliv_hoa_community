@@ -11,7 +11,26 @@ module V1
 				elsif params[:association_id].present?
 					bank_accounts = bank_accounts.for_specific_association(params[:association_id])
 				else
-					association_ids = current_user.associations.pluck(:id)
+					associations = Association
+				  .left_joins(units: :ownership_account)
+				  .yield_self { |query|
+						case current_user.res_or_sa_of_bm
+				    # when "Resident"
+				    when "BoardMember+Resident"
+				      query = query.where("ownership_accounts.unit_owner_id = ?", current_user.id)
+				    when "SystemAdmin", "BoardMember+SystemAdmin"
+				      query = query.where("associations.property_manager_id = ?", current_user.id)
+				    else
+							query = query.where(
+							  "associations.property_manager_id = :user_id",
+							  user_id: current_user.id
+							)
+				    end
+						query
+				   }
+				   .distinct
+				  association_ids = associations.map(&:id)
+					# association_ids = current_user.associations.pluck(:id)
 					bank_accounts = bank_accounts.for_association_ids(association_ids)
 				end
 				totle_balance = bank_accounts.present? ? bank_accounts.sum(:available_balance).to_f : 0.0
